@@ -1,0 +1,2535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SurviX — Social Media Analytics & Audience Intelligence</title>
+<meta name="description" content="SurviX — social media analytics & audience intelligence across sentiment, demographics, trends and network influence.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%23FFFFFF'/><rect x='6' y='6' width='88' height='88' rx='14' fill='none' stroke='%23E8EBF0' stroke-width='4'/><path d='M28 60 L44 42 L56 52 L74 30' stroke='%233B5BDB' stroke-width='8' fill='none' stroke-linecap='square' stroke-linejoin='miter'/><path d='M60 28 h16 v16' stroke='%235B7FD4' stroke-width='8' fill='none' stroke-linecap='square' stroke-linejoin='miter'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   SurviX — Design System (light / product-dashboard theme)
+   Off-white ground · white cards · navy ink · muted-blue accent
+   Inter + IBM Plex Mono · Radius 10px · 1px borders · soft shadows
+   ============================================================ */
+
+:root{
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px;   /* spacing scale */
+  --stroke:1.6px;                                                    /* chart line width */
+
+  --bg0:#FAFBFD;             /* page ground — off-white */
+  --bg1:#FFFFFF;             /* sidebar / topbar */
+  --bg2:#F4F6FA;             /* hover fill */
+  --bg3:#EDF0F5;             /* pressed fill / tracks */
+  --panel:#FFFFFF;           /* cards */
+  --panel2:#FDFDFE;
+
+  --line:#E8EBF0;            /* light hairline */
+  --line2:#D8DDE6;           /* stronger hairline */
+
+  --text:#1E2A3B;            /* dark navy ink */
+  --text2:#3E4C61;           /* strong secondary */
+  --text3:#6B7686;           /* muted slate */
+
+  --accent:#3B5BDB;          /* muted blue — primary accent */
+  --accent-dim:rgba(59,91,219,.08);
+  --accent-line:rgba(59,91,219,.35);
+  --caramel:#5B7FD4;         /* secondary blue — data/charts */
+
+  /* semantic data colors (muted) */
+  --pos:#4E9A6E;             /* muted green */
+  --neg:#CC5F52;             /* muted red */
+  --neu:#8894A6;             /* gray-blue */
+  --steel:#8894A6;           /* legacy alias */
+  --clay:#7A8CD8;            /* periwinkle */
+  --amber:#E09A4E;           /* muted orange */
+  --violet:#8B7FD6;          /* muted purple — sentiment */
+  --white:#1E2A3B;
+
+  --radius:10px;
+  --radius-sm:8px;
+  --card-shadow:0 1px 3px rgba(30,42,59,.06);
+  --sidebar-w:216px;
+  --topbar-h:44px;
+
+  --font:'Inter',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,'Cascadia Mono',monospace;
+  --display:'Inter',system-ui,sans-serif;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:var(--font);
+  background:var(--bg0);
+  color:var(--text);
+  font-size:12.5px;
+  line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+::selection{background:rgba(59,91,219,.15)}
+a{color:var(--text2);text-decoration:none}
+button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer}
+
+b,strong{font-weight:600}
+
+/* Scrollbars — square, dim */
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:#D8DDE6;border-radius:0}
+::-webkit-scrollbar-thumb:hover{background:#C2C9D6}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ================= Layout ================= */
+#app{display:flex;min-height:100vh}
+
+.sidebar{
+  width:var(--sidebar-w);flex:0 0 var(--sidebar-w);
+  position:fixed;inset:0 auto 0 0;z-index:60;
+  background:var(--bg1);
+  border-right:1px solid var(--line);
+  display:flex;flex-direction:column;
+  transition:transform .2s ease;
+}
+.sidebar.hidden{transform:translateX(-100%)}
+
+.brand{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 14px 11px;
+  border-bottom:1px solid var(--line);
+}
+.brand .logo{
+  width:26px;height:26px;flex:0 0 26px;
+  border:1px solid var(--accent-line);background:var(--accent-dim);border-radius:8px;
+  display:grid;place-items:center;
+}
+.brand .logo svg{width:16px;height:16px;color:var(--accent)}
+.brand-name{
+  font-family:var(--display);font-weight:600;font-size:17px;
+  letter-spacing:1.2px;text-transform:uppercase;line-height:1;
+}
+.brand-name b{color:var(--accent);font-weight:600}
+.brand-sub{font-family:var(--mono);font-size:8.5px;letter-spacing:1.8px;color:var(--text3);text-transform:uppercase;margin-top:3px}
+
+.nav{padding:10px 0;flex:1;overflow-y:auto;display:flex;flex-direction:column}
+/* center the module list in the free column space (auto margins collapse safely on overflow) */
+.nav > .nav-label:first-child{margin-top:auto}
+.nav > .nav-item:last-child{margin-bottom:auto}
+.nav-label{
+  font-family:var(--mono);font-size:9px;font-weight:500;letter-spacing:1.6px;
+  color:var(--text3);text-transform:uppercase;padding:12px 14px 5px;
+}
+.nav-item{
+  display:flex;align-items:center;gap:9px;width:100%;
+  padding:9px 14px;
+  color:var(--text2);font-weight:500;font-size:12.5px;
+  border-left:2px solid transparent;
+  transition:background .1s,color .1s;
+  text-align:left;
+}
+.nav-item svg{width:14px;height:14px;flex:0 0 14px;opacity:.8}
+.nav-item:hover{background:var(--bg2);color:var(--text)}
+.nav-item.active{
+  background:var(--bg3);color:var(--text);
+  border-left-color:var(--accent);
+}
+.nav-item.active svg{opacity:1;color:var(--accent)}
+.nav-item .tag{
+  margin-left:auto;font-family:var(--mono);font-size:8.5px;letter-spacing:.8px;
+  padding:1px 4px;color:var(--text3);
+  border:1px solid var(--line2);border-radius:var(--radius-sm);
+}
+.nav-item .tag.beta{color:var(--accent);border-color:var(--accent-line)}
+
+.pipeline-mini{margin:0;border-top:1px solid var(--line);padding:12px 14px 10px;background:var(--bg1)}
+.pipeline-mini h5{
+  font-family:var(--font);font-size:11px;letter-spacing:.1px;
+  color:var(--text2);margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;font-weight:600;
+}
+.pl-meter{height:3px;background:var(--bg3);border:1px solid var(--line);margin:0 0 9px;overflow:hidden}
+.pl-meter i{display:block;height:100%;width:38%;background:var(--accent);opacity:.85;animation:plLoad 3.2s ease-in-out infinite}
+@keyframes plLoad{0%,100%{transform:translateX(-30%)}50%{transform:translateX(230%)}}
+.pl-row{display:grid;grid-template-columns:5px 62px 1fr auto;align-items:center;gap:7px;font-size:11px;color:var(--text2);padding:2.5px 0}
+.pl-row .nm{color:var(--text2)}
+.pl-row .lat{font-family:var(--mono);font-size:9px;color:var(--text3);text-align:right;letter-spacing:.3px}
+.pl-row .st{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;min-width:52px;text-align:right}
+.pl-row .st:first-child:last-child{grid-column:1 / -1;min-width:0;text-align:left}
+.dot{width:5px;height:5px;border-radius:0;flex:0 0 5px;background:var(--text3)}
+.dot.live{background:var(--accent);animation:blink 1.6s steps(2) infinite}
+.dot.sync{background:var(--accent);opacity:.55;animation:blink .9s steps(2) infinite}
+.dot.ok{background:var(--steel)}
+.dot.off{background:#D8DDE6}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+.sidebar-foot{
+  padding:9px 14px;border-top:1px solid var(--line);
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.6px;color:var(--text3);
+  display:flex;align-items:center;gap:8px;text-transform:uppercase;
+}
+.sidebar-foot .avatar{
+  width:20px;height:20px;border:1px solid var(--line2);
+  display:grid;place-items:center;font-size:8.5px;color:var(--text2);
+}
+.sidebar-foot b{color:var(--text2);font-weight:500}
+
+.main{flex:1;margin-left:var(--sidebar-w);min-width:0;display:flex;flex-direction:column}
+.main.expanded{margin-left:0}
+
+/* ================= Topbar ================= */
+.topbar{
+  height:var(--topbar-h);flex:0 0 var(--topbar-h);
+  display:flex;align-items:center;gap:12px;
+  padding:0 16px;
+  border-bottom:1px solid var(--line);
+  background:var(--bg1);
+  position:sticky;top:0;z-index:50;
+}
+.hamburger{display:none;width:28px;height:28px;border:1px solid var(--line2);border-radius:var(--radius-sm);place-items:center}
+.hamburger:hover{border-color:var(--text3)}
+.hamburger svg{width:14px;height:14px;color:var(--text2)}
+.topbar .crumb{font-family:var(--display);font-weight:600;font-size:14px;letter-spacing:-.1px}
+.crumb b{color:var(--accent);font-weight:600}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+
+.live-chip{
+  display:flex;align-items:center;gap:7px;
+  font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--text2);
+  border:1px solid var(--line2);border-radius:var(--radius-sm);
+  padding:4px 9px;
+}
+.live-chip .dot{background:var(--accent);animation:blink 1.6s steps(2) infinite}
+.live-chip .txt{color:var(--accent)}
+.range{display:flex;border:1px solid var(--line2);border-radius:var(--radius-sm);overflow:hidden}
+.range button{
+  padding:4px 10px;font-family:var(--mono);font-size:10px;letter-spacing:.5px;
+  color:var(--text3);border-right:1px solid var(--line2);transition:background .1s;
+}
+.range button:last-child{border-right:none}
+.range button:hover{color:var(--text2);background:var(--bg2)}
+.range button:active{background:var(--bg3)}
+.range button.on{background:var(--accent-dim);color:var(--accent)}
+.range button:disabled{color:#A9B2C1;cursor:default}
+
+/* ================= Page / Cards ================= */
+.page{padding:16px;max-width:1560px;width:100%;margin:0 auto;animation:fadeIn .18s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+.page-head{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:12px;border-bottom:1px solid var(--line);padding-bottom:10px}
+.page-head h1{
+  font-family:var(--display);font-size:20px;font-weight:700;
+  letter-spacing:-.2px;line-height:1.15;
+}
+.page-head p{color:var(--text2);margin-top:4px;max-width:680px;font-family:var(--mono);font-size:10.5px;letter-spacing:.2px}
+.page-head .right{margin-left:auto;display:flex;gap:8px;align-items:center}
+
+.grid{display:grid;gap:10px}
+.kpis{grid-template-columns:repeat(4,1fr)}
+.g2{grid-template-columns:1fr 1fr}
+.g23{grid-template-columns:2fr 3fr}
+.g32{grid-template-columns:3fr 2fr}
+
+.card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:12px;
+  box-shadow:var(--card-shadow);
+  min-width:0;position:relative;
+}
+.card-head{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:8px}
+.card-head h3{
+  font-family:var(--font);font-size:13px;font-weight:600;
+  letter-spacing:-.1px;color:var(--text);
+}
+.card-head .sub{font-size:10.5px;color:var(--text3);font-family:var(--mono)}
+.card-head .right{margin-left:auto;display:flex;gap:7px;align-items:center}
+.card-head .ico{width:18px;height:18px;display:grid;place-items:center;color:var(--text3)}
+.card-head .ico svg{width:13px;height:13px}
+
+/* KPI cells — compact data blocks with pastel icon circles */
+.kpi{padding:14px 16px}
+.kpi .top{display:flex;align-items:center;gap:10px;color:var(--text3);font-family:var(--font);font-size:11px;font-weight:600;letter-spacing:.1px}
+.kpi .top .ico{width:14px;height:14px;display:grid;place-items:center;flex:0 0 14px}
+.kpi .top .ico svg{width:12px;height:12px;color:var(--text2)}
+.ico-circle{width:38px;height:38px;flex:0 0 38px;border-radius:50%;display:grid;place-items:center}
+.ico-circle svg{width:17px;height:17px}
+.ico-circle.green{background:#E3F2E8;color:#3E7D57}
+.ico-circle.blue{background:#E5EDFB;color:#3B5BDB}
+.ico-circle.purple{background:#ECE9F9;color:#6F5FC4}
+.ico-circle.orange{background:#FBEDDD;color:#B06A2E}
+.kpi .val{
+  font-family:var(--mono);font-size:24px;font-weight:600;letter-spacing:-.4px;
+  margin:12px 0 4px;font-variant-numeric:tabular-nums;color:var(--text);
+}
+/* text values (long topic names) stay proportional to numeric siblings */
+.kpi.with-text-val .val{
+  font-family:var(--font);font-size:17px;font-weight:700;letter-spacing:-.1px;line-height:1.3;
+}
+/* reserve the bottom-right sparkline zone so text never collides with it */
+.kpi:has(canvas.spark){padding-right:132px}
+.kpi .val small{font-size:12px;color:var(--text3);font-weight:400}
+.kpi .delta{font-size:10.5px;font-weight:400;font-family:var(--mono);font-variant-numeric:tabular-nums;max-width:100%}
+.up{color:var(--pos)}.down{color:var(--neg)}.flat{color:var(--text3)}
+.kpi .spark{position:absolute;right:12px;bottom:12px;opacity:.9}
+
+/* Tags & status badges — square bracket style */
+.badge{
+  display:inline-flex;align-items:center;gap:5px;
+  font-family:var(--mono);font-size:9px;font-weight:500;letter-spacing:1px;
+  padding:2px 6px;border-radius:var(--radius-sm);text-transform:uppercase;
+  border:1px solid var(--line2);color:var(--text2);
+}
+.badge.connected{color:var(--pos);border-color:rgba(78,154,110,.45)}
+.badge.good{color:var(--amber);border-color:rgba(197,138,74,.45)}
+.badge.bonus{color:var(--text2);border-color:var(--line2)}
+.badge.syncing{color:var(--accent);border-color:var(--accent-line)}
+.badge .dot{margin:0}
+
+.ptabs{display:flex;gap:6px;flex-wrap:wrap}
+.ptab{
+  display:flex;align-items:center;gap:7px;
+  padding:5px 9px;border-radius:var(--radius);
+  background:var(--bg2);border:1px solid var(--line);
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.4px;color:var(--text2);
+  transition:border-color .1s,color .1s,background .1s;
+}
+.ptab:hover{border-color:var(--line2);color:var(--text);background:var(--bg3)}
+.ptab:active{background:var(--accent-dim)}
+.ptab.on{border-color:var(--accent-line);color:var(--text);background:var(--accent-dim)}
+.ptab .plogo{width:14px;height:14px;display:grid;place-items:center}
+.ptab .plogo svg{width:13px;height:13px}
+
+/* Charts */
+.chart-wrap{width:100%;position:relative}
+.chart-wrap canvas{display:block;width:100%}
+.chart-tip{
+  position:fixed;z-index:100;pointer-events:none;
+  background:var(--bg3);border:1px solid var(--line2);
+  border-radius:var(--radius);padding:7px 9px;font-size:10.5px;
+  opacity:0;transition:opacity .1s;max-width:250px;
+  font-family:var(--mono);color:var(--text2);
+}
+.chart-tip b{display:block;margin-bottom:3px;font-size:10.5px;color:var(--text);font-weight:500}
+.chart-tip .row{display:flex;align-items:center;gap:6px;padding:1px 0;font-size:10px}
+.chart-tip .row i{width:7px;height:7px;display:inline-block}
+.chart-tip .row b{margin:0;color:var(--text);font-variant-numeric:tabular-nums}
+
+/* Sentiment feed — ledger rows */
+.feed{display:flex;flex-direction:column;max-height:560px;overflow-y:auto}
+.post{
+  border-bottom:1px solid var(--line);
+  padding:9px 4px;
+}
+.post:last-child{border-bottom:none}
+.post:hover{background:var(--bg2)}
+.post .p-head{display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap}
+.post .pav{
+  width:20px;height:20px;border-radius:var(--radius-sm);
+  display:grid;place-items:center;font-size:9px;font-weight:600;color:#FFFFFF;flex:0 0 20px;
+}
+.post .u{font-weight:600;font-size:12px;color:var(--text)}
+.post .h{color:var(--text3);font-size:10.5px;font-family:var(--mono)}
+.post .plat{margin-left:auto;display:flex;align-items:center;gap:5px;color:var(--text3);font-size:10px;font-family:var(--mono)}
+.post .plat svg{width:12px;height:12px}
+.post .txt{color:var(--text2);font-size:12px;line-height:1.5}
+.post .p-foot{display:flex;align-items:center;gap:10px;margin-top:7px;flex-wrap:wrap}
+.emo-chip{
+  display:inline-flex;align-items:center;gap:5px;
+  font-family:var(--mono);font-size:9px;font-weight:500;letter-spacing:.8px;
+  padding:1.5px 6px;border-radius:var(--radius-sm);border:1px solid;text-transform:uppercase;
+}
+.conf{margin-left:auto;font-family:var(--mono);font-size:9.5px;color:var(--text3);display:flex;align-items:center;gap:6px;font-variant-numeric:tabular-nums}
+.conf .bar{width:52px;height:3px;background:var(--bg3);overflow:hidden;border:1px solid var(--line)}
+.conf .bar i{display:block;height:100%;background:var(--accent)}
+
+/* Scrubber */
+.scrub-card{padding-bottom:12px}
+.scrub-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:10px;color:var(--text2);margin-bottom:4px;font-family:var(--mono)}
+.scrub-legend span{display:flex;align-items:center;gap:5px}
+.scrub-legend i{width:8px;height:8px}
+.event-card{
+  margin-top:10px;border:1px solid var(--accent-line);
+  background:var(--accent-dim);padding:12px;
+  display:none;animation:fadeIn .15s ease;
+}
+.event-card.show{display:block}
+.event-card h4{
+  font-family:var(--mono);font-size:11px;font-weight:500;color:var(--accent);
+  display:flex;gap:8px;align-items:center;letter-spacing:.8px;text-transform:uppercase;
+}
+.event-card p{font-size:11.5px;color:var(--text2);margin-top:5px}
+.event-card .stats{display:flex;gap:18px;margin-top:8px;flex-wrap:wrap}
+.event-card .stat b{font-family:var(--mono);font-size:13px;font-weight:500;display:block;font-variant-numeric:tabular-nums;color:var(--text)}
+.event-card .stat span{font-family:var(--mono);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1px}
+
+/* Event icon circle (Key Events rows) */
+.evt-circle{
+  width:32px;height:32px;flex:0 0 32px;border-radius:50%;
+  background:#E5EDFB;color:#3B5BDB;display:grid;place-items:center;
+}
+.evt-circle svg{width:15px;height:15px}
+
+/* Event tag (replaces pin emoji) */
+.evt-tag{
+  font-family:var(--mono);font-size:8.5px;letter-spacing:1px;color:var(--accent);
+  border:1px solid var(--accent-line);padding:1px 4px;border-radius:var(--radius-sm);
+  flex:0 0 auto;text-transform:uppercase;
+}
+
+/* Demographics */
+.disclaimer{
+  display:flex;gap:8px;align-items:flex-start;
+  border:1px solid var(--accent-line);background:var(--accent-dim);
+  color:var(--text2);border-radius:var(--radius);padding:8px 12px;
+  font-size:11px;line-height:1.5;margin-bottom:12px;
+}
+.disclaimer b{color:var(--accent);font-family:var(--mono);font-size:10px;letter-spacing:.8px;text-transform:uppercase}
+.disclaimer svg{width:13px;height:13px;flex:0 0 13px;margin-top:1px;color:var(--accent)}
+.region-row{display:flex;align-items:center;gap:9px;padding:5px 0;border-bottom:1px solid var(--line)}
+.region-row:last-child{border:none}
+.region-row .flag{
+  font-family:var(--mono);font-size:8.5px;letter-spacing:.5px;color:var(--text3);
+  border:1px solid var(--line2);padding:1px 3px;border-radius:var(--radius-sm);
+  width:26px;text-align:center;flex:0 0 26px;
+}
+.region-row .nm{font-size:11.5px;color:var(--text2);width:104px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.region-row .track{flex:1;height:8px;background:var(--bg3);overflow:hidden;border:1px solid var(--line)}
+.region-row .track i{display:block;height:100%;background:var(--text2);transition:width .6s ease}
+.region-row:first-of-type .track i{background:var(--accent)}
+.region-row .pct{font-family:var(--mono);font-size:10.5px;color:var(--text2);width:46px;text-align:right;font-variant-numeric:tabular-nums}
+.tagcloud{display:flex;flex-wrap:wrap;gap:6px 9px;align-items:center;justify-content:center;padding:6px 2px}
+.tagcloud .w{transition:color .1s;cursor:default;padding:1px 3px}
+.tagcloud .w:hover{color:var(--text)!important}
+
+/* Trends — leaderboard */
+.trend-row{
+  display:flex;align-items:center;gap:10px;padding:6px 6px;
+  border-bottom:1px solid var(--line);transition:background .1s;cursor:default;
+}
+.trend-row:last-child{border-bottom:none}
+.trend-row:hover{background:var(--bg2)}
+.trend-row .rank{
+  width:24px;height:24px;flex:0 0 24px;display:grid;place-items:center;
+  font-family:var(--mono);font-size:10.5px;color:var(--text3);
+  border-radius:50%;background:var(--bg2);
+}
+.trend-row:nth-child(1) .rank,.trend-row:nth-child(2) .rank,.trend-row:nth-child(3) .rank{color:var(--accent)}
+.trend-row .tt{min-width:0;flex:1}
+.trend-row .tt b{font-size:12px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+.trend-row .tt span{font-family:var(--mono);font-size:9.5px;color:var(--text3)}
+.trend-row .vol{font-family:var(--mono);font-size:10.5px;color:var(--text2);text-align:right;font-variant-numeric:tabular-nums}
+.trend-row .vol small{display:block;font-size:9px;color:var(--text3)}
+.momentum{
+  font-family:var(--mono);font-weight:500;font-size:10px;display:inline-flex;align-items:center;gap:3px;
+  padding:1px 5px;border-radius:var(--radius-sm);border:1px solid;font-variant-numeric:tabular-nums;
+}
+.momentum.up{color:var(--pos);border-color:rgba(78,154,110,.4)}
+.momentum.down{color:var(--neg);border-color:rgba(204,95,82,.4)}
+.momentum.flat{color:var(--text3);border-color:var(--line2)}
+
+.predict{border:1px solid var(--line2);padding:12px}
+.predict h4{
+  font-family:var(--font);font-size:13px;letter-spacing:-.1px;
+  color:var(--text);display:flex;align-items:center;gap:7px;margin-bottom:8px;font-weight:600;
+}
+.predict h4 svg{width:13px;height:13px;color:var(--accent)}
+.pred-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--line)}
+.pred-row:last-child{border:none;padding-bottom:0}
+.pred-row .kw{font-family:var(--mono);font-size:11px;font-weight:500;flex:0 0 128px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+.pred-row .track{flex:1;height:8px;background:var(--bg3);overflow:hidden;border:1px solid var(--line)}
+.pred-row .track i{display:block;height:100%;background:var(--accent);opacity:.75;transition:width .6s ease}
+.pred-row .pc{font-family:var(--mono);font-size:10.5px;color:var(--accent);width:40px;text-align:right;font-variant-numeric:tabular-nums}
+.pred-row .eta{font-family:var(--mono);font-size:9.5px;color:var(--text3);width:84px;text-align:right}
+
+/* Emerging risk signals — early warning demo */
+.risk-note{
+  font-family:var(--mono);font-size:9px;letter-spacing:.8px;text-transform:uppercase;
+  color:var(--text3);margin-bottom:8px;
+}
+.risk-row{border:1px solid var(--line);border-radius:var(--radius);margin-bottom:6px;background:var(--bg2)}
+.risk-row.crit{border-left:2px solid var(--neg)}
+.risk-row.high{border-left:2px solid var(--accent)}
+.risk-row.mid{border-left:2px solid var(--text3)}
+.risk-main{
+  display:grid;grid-template-columns:minmax(180px,1.4fr) 120px minmax(90px,.9fr) 1fr auto auto;
+  gap:10px;align-items:center;padding:8px 10px;cursor:pointer;
+}
+.risk-main:hover{background:var(--bg3)}
+.risk-main:active{background:var(--bg3)}
+.risk-main .rname{font-size:12px;font-weight:600;color:var(--text)}
+.risk-main .rvel{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.4px;text-transform:uppercase;margin-top:2px}
+.prob{display:flex;flex-direction:column;gap:3px}
+.prob .pv{font-family:var(--mono);font-size:12px;font-variant-numeric:tabular-nums;display:flex;justify-content:space-between;align-items:baseline}
+.prob .pv small{font-size:8px;letter-spacing:1px;color:var(--text3);text-transform:uppercase}
+.prob .track{height:6px;background:var(--bg3);border:1px solid var(--line);overflow:hidden}
+.prob .track i{display:block;height:100%}
+.prob.g .pv b{color:var(--pos)} .prob.g .track i{background:var(--pos)}
+.prob.a .pv b{color:var(--accent)} .prob.a .track i{background:var(--accent)}
+.prob.r .pv b{color:var(--neg)} .prob.r .track i{background:var(--neg)}
+.risk-main .rregions{font-family:var(--mono);font-size:9.5px;color:var(--text2);letter-spacing:.4px}
+.risk-main .rregions .sep{color:var(--text3)}
+.risk-main .rsent{font-family:var(--mono);font-size:9.5px;color:var(--text2)}
+.risk-main .rsent em{font-style:normal;color:var(--neg)}
+.risk-main .rspark{display:flex;justify-content:flex-end}
+.risk-main .caret{color:var(--text3);font-size:9px;transition:transform .15s;font-family:var(--mono)}
+.risk-row.open .caret{transform:rotate(90deg);color:var(--accent)}
+.risk-detail{display:none;border-top:1px solid var(--line);padding:9px 10px 10px;background:var(--bg1)}
+.risk-row.open .risk-detail{display:block;animation:fadeIn .15s ease}
+.risk-detail .sig-label{font-family:var(--font);font-size:10.5px;font-weight:600;color:var(--text3);margin-bottom:6px}
+.sig-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px}
+.sig-tag{
+  font-family:var(--mono);font-size:9px;letter-spacing:.6px;text-transform:uppercase;
+  color:var(--text2);border:1px solid var(--line2);border-radius:var(--radius-sm);padding:1.5px 6px;
+  background:var(--bg2);
+}
+.sig-tag.coord{color:var(--neg);border-color:rgba(204,95,82,.5)}
+.risk-posts{display:flex;flex-direction:column;gap:6px}
+.risk-post{border:1px solid var(--line);border-radius:var(--radius);padding:7px 9px;background:var(--bg2)}
+.risk-post .rp-head{display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap}
+.risk-post .rp-handle{font-family:var(--mono);font-size:10px;color:var(--text)}
+.risk-post .rp-meta{font-family:var(--mono);font-size:9px;color:var(--text3)}
+.risk-post .rp-emo{margin-left:auto}
+.risk-post .rp-text{font-size:11.5px;color:var(--text2);line-height:1.5}
+.risk-foot{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;margin-top:8px}
+
+/* Network */
+.net-card{padding-bottom:8px}
+.net-toolbar{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.net-toolbar select{
+  background:var(--bg2);color:var(--text);border:1px solid var(--line2);
+  border-radius:var(--radius-sm);padding:4px 8px;font-size:11px;font-family:var(--mono);outline:none;cursor:pointer;
+}
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 10px;border-radius:var(--radius-sm);
+  font-family:var(--mono);font-size:10px;letter-spacing:.8px;text-transform:uppercase;
+  border:1px solid var(--line2);color:var(--text2);transition:border-color .1s,color .1s,background .1s;
+}
+.btn:hover{color:var(--text);border-color:var(--text3)}
+.btn:active{background:var(--bg3)}
+.btn.primary{background:var(--accent-dim);border-color:var(--accent-line);color:var(--accent)}
+.btn.primary:hover{background:rgba(59,91,219,.14)}
+.btn.primary:active{background:rgba(59,91,219,.22)}
+.btn svg{width:11px;height:11px}
+.net-wrap{position:relative;border:1px solid var(--line);background:var(--bg1)}
+.net-wrap canvas{display:block;cursor:grab}
+.net-wrap canvas:active{cursor:grabbing}
+.net-hint{
+  position:absolute;left:10px;bottom:8px;font-size:10px;color:var(--text3);
+  font-family:var(--mono);letter-spacing:.2px;pointer-events:none;
+}
+.net-legend{
+  position:absolute;right:10px;top:8px;display:flex;flex-direction:column;gap:4px;
+  background:rgba(255,255,255,.94);border:1px solid var(--line2);border-radius:var(--radius-sm);
+  padding:7px 10px;font-family:var(--font);font-size:10.5px;letter-spacing:.1px;
+  color:var(--text2);pointer-events:none;
+}
+.net-legend span{display:flex;align-items:center;gap:6px}
+.net-legend i{width:8px;height:8px}
+
+.detail{
+  margin-top:10px;border:1px solid var(--accent-line);
+  background:var(--accent-dim);padding:12px;display:none;animation:fadeIn .15s ease;
+}
+.detail.show{display:block}
+.detail .d-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.detail .dav{
+  width:30px;height:30px;border-radius:var(--radius-sm);
+  display:grid;place-items:center;font-family:var(--mono);font-weight:600;color:#FFFFFF;font-size:12px;
+}
+.detail h4{font-family:var(--mono);font-size:13px;font-weight:500}
+.detail .d-sub{font-size:9.5px;color:var(--text3);font-family:var(--mono);letter-spacing:.8px;text-transform:uppercase}
+.detail .close{
+  margin-left:auto;color:var(--text3);width:22px;height:22px;
+  display:grid;place-items:center;border:1px solid var(--line2);border-radius:var(--radius-sm);font-size:11px;
+}
+.detail .close:hover{color:var(--text);border-color:var(--text3)}
+.d-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.d-stat{background:var(--bg2);border:1px solid var(--line);border-radius:var(--radius);padding:7px 9px}
+.d-stat b{font-family:var(--mono);font-size:14px;font-weight:500;display:block;font-variant-numeric:tabular-nums}
+.d-stat span{font-family:var(--mono);font-size:8.5px;color:var(--text3);text-transform:uppercase;letter-spacing:1px}
+.influence-bar{margin-top:10px}
+.influence-bar .lbl{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9.5px;color:var(--text2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+.influence-bar .track{height:8px;background:var(--bg3);overflow:hidden;border:1px solid var(--line)}
+.influence-bar .track i{display:block;height:100%;background:var(--accent);opacity:.8;transition:width .7s ease}
+.follower-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.fchip{
+  display:flex;align-items:center;gap:6px;background:var(--bg2);
+  border:1px solid var(--line);border-radius:var(--radius);
+  padding:2.5px 8px 2.5px 3px;font-size:10.5px;color:var(--text2);cursor:pointer;
+  transition:border-color .1s;font-family:var(--mono);
+}
+.fchip:hover{border-color:var(--accent-line);color:var(--text)}
+.fchip i{
+  width:14px;height:14px;border-radius:var(--radius-sm);display:grid;place-items:center;
+  font-style:normal;font-weight:600;font-size:7.5px;color:#FFFFFF;
+}
+.fchip b{font-weight:400;color:var(--text3);font-size:9px;font-variant-numeric:tabular-nums}
+
+/* Status table */
+.status-grid{display:flex;flex-direction:column;gap:0}
+.status-row{display:flex;align-items:center;gap:10px;padding:5.5px 2px;border-bottom:1px solid var(--line)}
+.status-row:last-child{border-bottom:none}
+.status-row .nm{font-family:var(--mono);font-size:10.5px;width:92px;display:flex;align-items:center;gap:7px;color:var(--text2)}
+.status-row .nm svg{width:12px;height:12px}
+.status-row .bar{flex:1;height:5px;background:var(--bg3);overflow:hidden;border:1px solid var(--line)}
+.status-row .bar i{display:block;height:100%;transition:width .5s ease}
+.status-row .st{font-family:var(--mono);font-size:9px;width:76px;text-align:right;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+.status-row .lat{font-family:var(--mono);font-size:9.5px;color:var(--text3);width:52px;text-align:right;font-variant-numeric:tabular-nums}
+
+/* States */
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;gap:12px;color:var(--text3);font-size:11px;font-family:var(--mono);letter-spacing:1px;text-transform:uppercase}
+.loader{width:18px;height:18px;border:1px solid var(--line2);border-top-color:var(--accent);animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.skeleton{position:relative;overflow:hidden;background:var(--bg3);border-radius:var(--radius-sm);animation:pulseDim 1.2s ease infinite}
+@keyframes pulseDim{0%,100%{opacity:1}50%{opacity:.55}}
+.empty{
+  display:flex;flex-direction:column;align-items:center;text-align:center;
+  padding:40px 20px;gap:8px;color:var(--text3);
+}
+.empty .ico{width:36px;height:36px;border:1px dashed var(--line2);display:grid;place-items:center}
+.empty .ico svg{width:16px;height:16px;color:var(--text3)}
+.empty b{color:var(--text2);font-family:var(--mono);font-size:11px;letter-spacing:.8px;text-transform:uppercase}
+.empty p{font-size:11px;max-width:320px}
+.empty .btn{margin-top:6px}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:16px;left:50%;transform:translate(-50%,60px);
+  background:var(--bg3);border:1px solid var(--accent-line);border-left:2px solid var(--accent);
+  color:var(--text);padding:8px 14px;border-radius:var(--radius);
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.4px;
+  z-index:200;opacity:0;transition:all .25s ease;
+  display:flex;align-items:center;gap:8px;pointer-events:none;
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast svg{width:12px;height:12px;color:var(--accent)}
+
+/* Time axis note */
+.axis-note{
+  font-size:10px;color:var(--text3);font-family:var(--mono);
+  display:flex;justify-content:space-between;margin-top:6px;letter-spacing:.2px;
+}
+
+/* keyboard focus — one consistent ring */
+.btn:focus-visible,.nav-item:focus-visible,.ptab:focus-visible,.range button:focus-visible,
+.hamburger:focus-visible,.fchip:focus-visible,.detail .close:focus-visible{
+  outline:1px solid var(--accent-line);outline-offset:1px;
+}
+
+/* ================= Responsive ================= */
+@media (max-width:1180px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .g2,.g23,.g32{grid-template-columns:1fr}
+  /* risk rows: wrap the 6-col grid before it overflows */
+  .risk-main{grid-template-columns:minmax(150px,1.4fr) 110px 1fr auto auto}
+  .risk-main .rsent{display:none}
+}
+@media (max-width:900px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .hamburger{display:grid}
+  .page{padding:12px}
+  .topbar{padding:0 12px}
+  .range{display:none}
+}
+@media (max-width:620px){
+  .kpis{grid-template-columns:1fr}
+  .d-stats{grid-template-columns:repeat(2,1fr)}
+  .page-head h1{font-size:16px}
+  .live-chip span.txt{display:none}
+  .topbar .crumb{display:none}
+  /* risk rows: stack metadata under the name */
+  .risk-main{grid-template-columns:1fr auto auto;row-gap:6px}
+  .risk-main > div:first-child{grid-column:1 / -1}
+  .risk-main .rregions{grid-column:1 / 2}
+  .risk-main .rspark{grid-column:2 / 3}
+  .risk-main .caret{grid-column:3 / 4}
+}
+
+/* ============================================================
+   Additions — PS coverage strip · platform tiering · why-line ·
+   diffusion replay emphasis (all reuse existing tokens)
+   ============================================================ */
+
+/* --- 1 · PS coverage strip (module completion chips) --- */
+.ps-strip{
+  display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+  margin-bottom:12px;
+}
+.ps-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:var(--mono);font-size:9px;font-weight:500;letter-spacing:.8px;text-transform:uppercase;
+  color:var(--text2);background:rgba(78,154,110,.07);
+  border:1px solid rgba(78,154,110,.35);border-radius:var(--radius-sm);
+  padding:2.5px 9px 2.5px 7px;white-space:nowrap;
+}
+.ps-chip svg{width:10px;height:10px;flex:0 0 10px;color:var(--pos)}
+.ps-chip b{color:var(--pos);font-weight:600}
+@media (max-width:760px){ .ps-strip{gap:6px} .ps-chip{padding:2px 7px 2px 5px} }
+
+/* --- 2 · Platform tier grouping --- */
+.tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+.tier-col{min-width:0}
+.tier-col h4{
+  font-family:var(--font);font-size:13px;letter-spacing:-.1px;
+  color:var(--text);margin-bottom:10px;
+  display:flex;align-items:baseline;gap:6px;
+  border-bottom:1px solid var(--line);padding-bottom:8px;font-weight:600;
+}
+.tier-col h4 small{color:var(--text3);opacity:.75;letter-spacing:.4px}
+.tier-list{display:flex;flex-direction:column}
+.tier-row{display:flex;align-items:center;gap:8px;padding:5.5px 0;border-bottom:1px solid var(--line)}
+.tier-row:last-child{border-bottom:0}
+.tier-row .nm{font-size:12px;color:var(--text);font-weight:500}
+.tier-row .st{margin-left:auto;font-family:var(--mono);font-size:9px;letter-spacing:.6px;text-transform:uppercase;color:var(--text3)}
+@media (max-width:1000px){ .tiers{grid-template-columns:1fr} }
+
+/* --- 3 · "Why this matters" line under page-heads --- */
+.page-head p .why{display:block;margin-top:2px;color:var(--text3);font-size:9.5px;letter-spacing:.2px}
+
+
+
+
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="tip" class="chart-tip"></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ============================================================
+   SurviX — Mock Data Layer
+   Structured to mirror future REST/GraphQL API payloads so the
+   fetches in app.js can be swapped for real endpoints 1:1.
+   Palette: muted terminal-grade data colors (amber = accent).
+   ============================================================ */
+
+const SURVIX = (window.SURVIX = {});
+
+/* ---------- Platforms ---------- */
+SURVIX.platforms = [
+  { id:'x',        name:'X',         status:'connected', tier:'core',    ingest:'live',    latency:'120ms', rows:'2.4M', color:'#1E2A3B' },
+  { id:'telegram', name:'Telegram',  status:'connected', tier:'core',    ingest:'live',    latency:'210ms', rows:'1.1M', color:'#7A8CD8' },
+  { id:'instagram',name:'Instagram', status:'syncing',   tier:'good',    ingest:'syncing', latency:'640ms', rows:'890K', color:'#5B7FD4' },
+  { id:'facebook', name:'Facebook',  status:'connected', tier:'good',    ingest:'live',    latency:'330ms', rows:'1.6M', color:'#4E9A6E' },
+  { id:'reddit',   name:'Reddit',    status:'connected', tier:'good',    ingest:'live',    latency:'180ms', rows:'3.2M', color:'#CC5F52' },
+  { id:'youtube',  name:'YouTube',   status:'connected', tier:'bonus',   ingest:'live',    latency:'290ms', rows:'760K', color:'#E09A4E' },
+  { id:'linkedin', name:'LinkedIn',  status:'good',      tier:'good',    ingest:'idle',    latency:'—',     rows:'—',    color:'#8894A6' },
+  { id:'tiktok',   name:'TikTok',    status:'bonus',     tier:'bonus',   ingest:'idle',    latency:'—',     rows:'—',    color:'#8B7FD6' },
+];
+
+/* ---------- Timeline helper: last 30 days ---------- */
+function _dates(n){
+  const out=[], now=new Date('2026-09-25T00:00:00Z');
+  for(let i=n-1;i>=0;i--){
+    const d=new Date(now); d.setUTCDate(d.getUTCDate()-i);
+    out.push(d.toISOString().slice(0,10));
+  }
+  return out;
+}
+const D30 = _dates(30);
+
+/* ---------- Overview KPIs ---------- */
+SURVIX.overview = {
+  kpis:{
+    followers:{ value:1284900, delta:+6.8, label:'Total Followers Analyzed' },
+    platforms:{ value:6, delta:0, label:'Active Platforms Connected' },
+    sentiment:{ value:7.4, delta:+0.6, label:'Overall Sentiment Score /10', scale:10 },
+    trend:{ value:'Agrarian policy backlash', delta:+164, label:'Top Trending Topic', unit:' mentions/day' },
+  },
+  /* daily: engagement volume + avg sentiment (per day, all platforms) */
+  timeline:{
+    dates:D30,
+    mentions:[ 11800,12400,12100,13900,15200,14800,16100,15900,17400,18900,
+               18600,20100,22800,21500,20900,23400,26100,25400,24100,27600,
+               31200,29800,28400,35100,42300,38900,33400,30100,32600,34900 ],
+    sentiment:[ 6.1,6.0,6.2,6.3,6.4,6.1,6.5,6.6,6.4,6.6,
+                6.7,6.5,6.8,6.9,6.6,6.7,7.0,7.1,6.9,7.0,
+                7.2,7.1,6.8,7.3,7.8,7.6,7.2,7.0,7.3,7.4 ],
+    positive:[ 42,41,43,44,45,42,46,47,45,47,48,46,49,50,47,48,51,52,50,51,53,52,49,54,58,56,52,50,53,54 ],
+    negative:[ 31,32,31,30,29,32,28,27,29,27,26,28,25,24,27,26,23,22,24,23,21,22,25,20,15,17,21,24,21,19 ],
+    neutral:  [ 27,27,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,27,27,27,26,26,27 ],
+  },
+};
+
+/* ---------- Named events (scrubber) ---------- */
+SURVIX.events = [
+  { date:'2026-09-13', title:'Product Beta Launch', desc:'Beta invite wave shipped. Engagement volume jumped 38% in 24h; excitement dominated mention tone across X and Reddit.',
+    stats:{ 'Mentions':'+38%','Sentiment':'6.9 → 7.2','Reach':'1.9M','Posts':'8,412' } },
+  { date:'2026-09-18', title:'Influencer Collab — @dr_aris', desc:'A 2.1M-follower KOL posted a first-look reel. Sarcasm spike detected (14%) but net sentiment stayed positive.',
+    stats:{ 'Mentions':'41.2K peak','Sentiment':'7.0 → 7.6','Reach':'3.4M','Posts':'12,077' } },
+  { date:'2026-09-24', title:'Pricing Page Incident', desc:'A transient pricing-page bug triggered an anxiety spike (19%) and a sharp negative cluster on X; resolved in 6h.',
+    stats:{ 'Mentions':'-9% dip','Sentiment':'7.4 → 6.9','Escalations':'214','Resolved':'98%' } },
+];
+
+/* ---------- Sentiment module ---------- */
+SURVIX.sentiment = {
+  /* per-day series */
+  series:{
+    dates:D30,
+    positive:[ 42,41,43,44,45,42,46,47,45,47,48,46,49,50,47,48,51,52,50,51,53,52,49,54,58,56,52,50,53,54 ],
+    negative:[ 31,32,31,30,29,32,28,27,29,27,26,28,25,24,27,26,23,22,24,23,21,22,25,20,15,17,21,24,21,19 ],
+    neutral:  [ 27,27,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,27,27,27,26,26,27 ],
+    sarcasm:   [ 4.2,4.5,4.1,3.9,4.4,5.1,4.8,4.6,5.0,5.3,5.6,6.1,6.4,6.0,5.7,5.9,6.3,6.8,7.1,6.6,5.8,5.4,5.9,6.2,7.4,7.8,7.1,6.5,6.2,5.9 ],
+    anxiety:   [ 8.1,7.8,8.4,8.0,7.6,8.2,7.9,7.4,7.7,7.2,7.0,7.5,6.8,6.5,7.1,6.9,6.2,6.0,6.4,6.1,5.7,5.5,6.1,5.2,4.8,6.1,9.4,10.8,8.2,7.1 ],
+    excitement:[ 9.2,9.0,9.4,9.8,10.2,9.6,10.4,10.8,10.1,10.6,11.0,10.4,11.8,12.4,11.2,11.6,12.8,13.4,12.6,13.0,13.8,13.2,12.4,14.1,17.6,16.2,14.0,12.8,13.6,14.2 ],
+    supportive:[ 6.4,6.6,6.3,6.8,7.0,6.5,7.2,7.4,7.0,7.3,7.6,7.1,7.9,8.2,7.5,7.8,8.4,8.8,8.1,8.5,9.0,8.6,8.0,9.2,10.8,10.2,9.0,8.4,9.1,9.4 ],
+    against:   [ 5.1,5.3,5.0,4.8,4.6,5.2,4.7,4.5,4.9,4.6,4.4,4.9,4.2,4.0,4.6,4.3,3.8,3.6,4.1,3.9,3.5,3.7,4.2,3.2,2.6,3.1,3.9,4.4,3.8,3.4 ],
+  },
+  emotions:[
+    { name:'Excitement', pct:21, color:'#4E9A6E' },
+    { name:'Supportive', pct:17, color:'#7A8CD8' },
+    { name:'Neutral',    pct:16, color:'#8894A6' },
+    { name:'Positive',   pct:14, color:'#A9B4C9' },
+    { name:'Anxiety',    pct:11, color:'#E09A4E' },
+    { name:'Sarcasm',    pct:9,  color:'#5B7FD4' },
+    { name:'Against',    pct:7,  color:'#CC5F52' },
+    { name:'Negative',   pct:5,  color:'#B04A3E' },
+  ],
+  /* sample tagged posts */
+  posts:[
+    { user:'nova_dev',        handle:'@nova_dev',        platform:'x',        emotion:'Excitement', conf:0.97, text:'Just got into the SurviX beta and the network graph view is unreal. Spent 40 minutes just exploring audience clusters.', time:'2h ago',    likes:4821, av:'#4E9A6E' },
+    { user:'Marisol Vega',    handle:'r/growthhacking',  platform:'reddit',   emotion:'Supportive', conf:0.94, text:'Their sentiment engine caught a sarcasm spike in our launch thread that GPT-based tools completely missed. Legit impressed.', time:'4h ago',   likes:1932, av:'#CC5F52' },
+    { user:'crypto_owl',      handle:'@crypto_owl',      platform:'x',        emotion:'Sarcasm',    conf:0.91, text:'Oh great, another "AI-powered audience intelligence" dashboard. Because we definitely didn\'t have 50 of those already.', time:'5h ago', likes:2870, av:'#5B7FD4' },
+    { user:'ByteTheory',      handle:'ByteTheory',       platform:'youtube',  emotion:'Excitement', conf:0.95, text:'The influence scoring in the link analysis module is the coolest thing I\'ve seen in analytics all year. Full breakdown soon.', time:'7h ago',  likes:15230, av:'#E09A4E' },
+    { user:'anna.builds',     handle:'@anna.builds',     platform:'instagram',emotion:'Anxiety',    conf:0.88, text:'Okay the new pricing page is stressing me out?? Did the team plan go away or am I just not seeing it in the menu.', time:'9h ago', likes:640, av:'#5B7FD4' },
+    { user:'Telegram Deep Dive',handle:'@survix_chat',   platform:'telegram', emotion:'Supportive', conf:0.92, text:'Community poll: 78% of members say the emotion timeline is their favorite feature. Thanks for shipping what we asked for.', time:'11h ago',likes:918,  av:'#7A8CD8' },
+    { user:'growth_henry',    handle:'@growth_henry',    platform:'x',        emotion:'Positive',   conf:0.93, text:'Audience intelligence done right: SurviX flagged two civic topics in my region a week before they popped. Wild.', time:'13h ago', likes:3311, av:'#A9B4C9' },
+    { user:'Delta Foxes',     handle:'Delta Foxes',      platform:'facebook', emotion:'Against',    conf:0.86, text:'Not convinced the demographic inference is accurate. My age band is way off, and I never stated it anywhere publicly.', time:'15h ago',likes:204,  av:'#4E9A6E' },
+    { user:'quietpines',      handle:'r/analytics',      platform:'reddit',   emotion:'Anxiety',    conf:0.90, text:'Serious question: if these tools can infer so much from public posts, what stops misuse at scale? The disclaimer feels thin.', time:'17h ago',likes:878,  av:'#CC5F52' },
+    { user:'kofi.streams',    handle:'@kofi.streams',    platform:'x',        emotion:'Excitement', conf:0.96, text:'Clicked one node in the network graph and got the full influence breakdown — followers, reach factor, connected KOLs. Watch it. Now.', time:'18h ago', likes:5102, av:'#4E9A6E' },
+    { user:'Ines Duarte',     handle:'@ines_duarte',     platform:'instagram',emotion:'Supportive', conf:0.89, text:'As a community manager, the per-platform sentiment tabs save me hours every week. More platforms please.', time:'20h ago',likes:421,  av:'#5B7FD4' },
+    { user:'normcore_pete',   handle:'@normcore_pete',   platform:'facebook', emotion:'Neutral',    conf:0.95, text:'Saw the demo at the meetup. It\'s a dashboard. It has charts. It seemed fast. That\'s all I\'ve got.', time:'22h ago',likes:89,   av:'#8894A6' },
+    { user:'QuantBot9000',    handle:'@quantbot9000',    platform:'x',        emotion:'Sarcasm',    conf:0.84, text:'Breaking: local man discovers his audience skews "25-34, tech-adjacent". Groundbreaking. Never seen that before.', time:'1d ago', likes:1204, av:'#5B7FD4' },
+    { user:'Lucia Marín',     handle:'@lucia_marin',     platform:'youtube',  emotion:'Positive',   conf:0.92, text:'Compared three audience tools this month. SurviX\'s influence scoring is the only one that didn\'t feel like follower counts in a trench coat.', time:'1d ago',likes:2870, av:'#E09A4E' },
+  ],
+  /* per-platform sentiment snapshot */
+  byPlatform:[
+    { id:'x',        pos:51, neg:22, score:7.1 },
+    { id:'telegram', pos:57, neg:15, score:7.8 },
+    { id:'instagram',pos:49, neg:24, score:6.9 },
+    { id:'facebook', pos:44, neg:29, score:6.4 },
+    { id:'reddit',   pos:46, neg:26, score:6.6 },
+    { id:'youtube',  pos:55, neg:18, score:7.5 },
+  ],
+};
+
+/* ---------- Demographics module ---------- */
+SURVIX.demographics = {
+  ages:[
+    { label:'18–24', pct:22 },{ label:'25–34', pct:38 },{ label:'35–44', pct:21 },
+    { label:'45–54', pct:11 },{ label:'55–64', pct:5 },{ label:'65+',  pct:3 },
+  ],
+  regions:[
+    { name:'United States', code:'US', pct:34.2 },{ name:'India', code:'IN', pct:22.1 },
+    { name:'Germany', code:'DE', pct:7.9 },{ name:'United Kingdom', code:'GB', pct:6.8 },
+    { name:'Brazil', code:'BR', pct:5.7 },{ name:'Nigeria', code:'NG', pct:4.3 },
+    { name:'Japan', code:'JP', pct:3.7 },{ name:'Canada', code:'CA', pct:3.3 },
+    { name:'Australia', code:'AU', pct:2.7 },{ name:'Mexico', code:'MX', pct:2.4 },
+    { name:'France', code:'FR', pct:2.2 },{ name:'Rest of World', code:'ROW', pct:4.7 },
+  ],
+  languages:[
+    { name:'English',  pct:46, color:'#A9B4C9' },
+    { name:'Hindi',    pct:12, color:'#7A8CD8' },
+    { name:'Spanish',  pct:11, color:'#4E9A6E' },
+    { name:'Portuguese',pct:9, color:'#5B7FD4' },
+    { name:'German',   pct:8,  color:'#E09A4E' },
+    { name:'French',   pct:6,  color:'#CC5F52' },
+    { name:'Japanese', pct:5,  color:'#8B7FD6' },
+    { name:'Other',    pct:3,  color:'#8894A6' },
+  ],
+  /* broad, reader-friendly interest categories (share of profiles) */
+  interestCats:[
+    { name:'Technology & Gadgets',        pct:31 },
+    { name:'Politics & Current Affairs',  pct:26 },
+    { name:'Business & Finance',          pct:21 },
+    { name:'Entertainment & Media',       pct:17 },
+    { name:'Education & Careers',         pct:13 },
+    { name:'Sports & Fitness',            pct:9  },
+  ],
+  interests:[
+    { w:'AI / ML',           s:44 },{ w:'Startups',        s:36 },{ w:'Data Science',  s:33 },
+    { w:'Crypto',            s:29 },{ w:'SaaS',            s:27 },{ w:'Design',        s:24 },
+    { w:'Dev Tools',         s:23 },{ w:'Marketing',       s:21 },{ w:'Productivity',  s:18 },
+    { w:'Privacy',           s:16 },{ w:'Gaming',          s:15 },{ w:'Fintech',       s:13 },
+    { w:'Cloud',             s:12 },{ w:'No-code',         s:11 },{ w:'Cybersecurity', s:10 },
+    { w:'Robotics',          s:8  },{ w:'EdTech',          s:7  },{ w:'Climate Tech',  s:6  },
+  ],
+};
+
+/* ---------- Trends module ---------- */
+SURVIX.trends = {
+  ranked:[
+    { kw:'Agrarian policy backlash', vol:'48.6K', mom:+186, spark:'6,8,11,16,22,30,41,55,74,96' },
+    { kw:'Judicial reform debate',   vol:'36.2K', mom:+94,  spark:'14,15,17,19,21,24,26,29,33,38' },
+    { kw:'Fuel price discontent',    vol:'29.4K', mom:+58,  spark:'9,11,12,14,16,17,20,22,25,29' },
+    { kw:'Labor rights movement',    vol:'22.8K', mom:+37,  spark:'7,8,8,9,10,11,12,13,14,16' },
+    { kw:'Free speech debate',       vol:'17.5K', mom:-14,  spark:'13,14,14,15,15,14,14,13,13,12' },
+    { kw:'Election reform chatter',  vol:'13.1K', mom:+8,   spark:'6,6,7,7,7,8,8,8,8,9' },
+    { kw:'Minimum wage debate',      vol:'10.7K', mom:-42,  spark:'15,15,14,13,12,11,10,8,7,6' },
+    { kw:'Housing affordability',    vol:'8.9K',  mom:+12,  spark:'4,4,5,5,5,6,6,6,7,7' },
+    { kw:'Digital privacy bills',    vol:'7.3K',  mom:-9,   spark:'6,6,6,7,6,6,6,5,6,6' },
+    { kw:'Transit strike watch',     vol:'5.6K',  mom:+3,   spark:'3,3,4,4,4,4,4,5,5,5' },
+  ],
+  spikes:{
+    dates:D30,
+    'Agrarian policy backlash': [3,3,4,4,5,5,6,7,8,9,11,13,12,16,20,25,31,39,48,62,79,101,128,162,205,258,214,168,146,138],
+    'Judicial reform debate':   [10,11,11,12,14,15,16,18,20,21,24,26,28,31,34,33,37,41,45,50,55,60,66,72,79,87,80,72,66,61],
+    'Fuel price discontent':    [6,7,7,8,9,10,11,12,14,15,17,19,21,24,26,28,26,23,20,18,21,26,33,41,52,64,58,49,44,41],
+    'Free speech debate':       [4,4,5,5,6,7,9,12,16,22,30,41,55,72,91,108,94,76,61,49,39,31,25,20,16,14,12,11,10,10],
+  },
+  /* ---------- Emerging risk signals (predictive demo) ----------
+     Capability demo: synthetic scenario data, generic category names only.
+     Breakout bands: <30 low (green) · 30-60 elevated (amber) · >60 critical (red) */
+  risks:{
+    note:'capability demo · synthetic scenario data · generic categories only',
+    entries:[
+      {
+        id:'farmer-mobilization',
+        name:'Farmer union mobilization',
+        prob:74, velocity:'Rising 3.2x in 48h', regions:['Punjab','Haryana'],
+        sentiment:'68% Against / Grievance',
+        spark:'12,14,18,26,38,55,78',
+        signals:['coordination language','rally logistics keywords','cross-platform coordination (Telegram + X)'],
+        posts:[
+          { handle:'@fieldwatch_22', platform:'x', emotion:'Against', conf:0.91, time:'3h ago', text:'District unions confirming assembly points for Thursday. Carpool lists are circulating in the district groups.' },
+          { handle:'tg-logistics-delta', platform:'telegram', emotion:'Neutral', conf:0.84, time:'5h ago', text:'Route map v3 uploaded. Volunteers report to the market gate between 5-7 AM. Bring water, banners ready.' },
+          { handle:'ruralvoices', platform:'facebook', emotion:'Anxiety', conf:0.79, time:'8h ago', text:'Prices at the market are unsustainable this season. Families are stretched thin; patience in the villages is wearing out.' },
+        ],
+      },
+      {
+        id:'fuel-price-discontent',
+        name:'Fuel price discontent',
+        prob:58, velocity:'Steady rise over 5 days', regions:['Multiple metros'],
+        sentiment:'74% Negative / Grievance',
+        spark:'9,11,13,16,19,23,28',
+        signals:['grievance phrasing cluster','local news echo','petition growth velocity'],
+        posts:[
+          { handle:'@commuterdaily', platform:'x', emotion:'Sarcasm', conf:0.87, time:'1h ago', text:'Great, another hike. Bus fare up, fuel up, wages flat. Brilliant math, truly.' },
+          { handle:'r/metro-riders-forum', platform:'reddit', emotion:'Against', conf:0.85, time:'7h ago', text:'Petition crosses 40k signatures as auto unions threaten a two-day stoppage across the metro corridors.' },
+        ],
+      },
+      {
+        id:'judicial-reform-backlash',
+        name:'Judicial reform backlash',
+        prob:41, velocity:'Rising 1.8x in 24h', regions:null,
+        sentiment:'Mixed: 52% Against, 30% Supportive',
+        spark:'20,22,25,23,28,34,41',
+        signals:['hashtag swarm formation','association walkout chatter','amplified quote-cascade'],
+        posts:[
+          { handle:'@courthousebeat', platform:'x', emotion:'Against', conf:0.88, time:'2h ago', text:'Third reading passed with zero public consultation. Bar associations announcing walkouts; this will not stay quiet.' },
+          { handle:'@legalmind_ks', platform:'x', emotion:'Supportive', conf:0.82, time:'6h ago', text:'Dockets have been paralyzed for a decade. If the reform unclogs case backlogs, I support the attempt.' },
+        ],
+      },
+      {
+        id:'labor-strike-chatter',
+        name:'Labor strike coordination chatter',
+        prob:33, velocity:'New signal · 36h window', regions:null,
+        sentiment:'Coordination-language density 8.2x baseline',
+        spark:'3,4,4,7,12,19,31',
+        signals:['coordination language','shift-timing keywords','encrypted-channel referrals'],
+        posts:[
+          { handle:'unit_steward_w2', platform:'telegram', emotion:'Neutral', conf:0.80, time:'4h ago', text:'Night-shift reps meeting after second shift Wednesday. Attendance sheet doing the rounds. Keep it internal.' },
+          { handle:'@plantworker_n', platform:'x', emotion:'Anxiety', conf:0.76, time:'9h ago', text:'Rumor of a one-day token strike next week. Nothing official yet, but stewards are polling members quietly.' },
+        ],
+      },
+    ],
+  },
+  predicted:[
+    { kw:'Ballot measure chatter',   conf:84, eta:'~4 days',  basis:'Cross-platform mention velocity +2.9σ for 6 consecutive days' },
+    { kw:'Utility price hearings',   conf:71, eta:'~8 days',  basis:'Co-occurrence with 4 rising clusters; regional news echo widening' },
+    { kw:'Campus protest season',    conf:62, eta:'~2 weeks', basis:'Coordination-language density up 130%; early-adopter clusters engaging' },
+    { kw:'Transit union action',     conf:51, eta:'~3 weeks', basis:'Petition-velocity signal detected; historically 60% fizzle rate' },
+  ],
+  cloud:[
+    { w:'agrarian', s:40 },{ w:'reform', s:33 },{ w:'petition', s:30 },{ w:'strike', s:26 },
+    { w:'hearings', s:22 },{ w:'ballot', s:20 },{ w:'coalition', s:19 },{ w:'rally', s:17 },
+    { w:'union', s:16 },{ w:'mandate', s:15 },{ w:'town hall', s:14 },{ w:'grievance', s:13 },
+    { w:'wages', s:12 },{ w:'subsidy', s:11 },{ w:'curfew', s:10 },{ w:'bill', s:9 },
+    { w:'sit-in', s:9 },{ w:'caucus', s:8 },{ w:'referendum', s:8 },{ w:'walkout', s:7 },
+  ],
+};
+
+/* ---------- Network module ---------- */
+SURVIX.network = {
+  clusters:[
+    { id:'dev',      name:'Builders & Devs',   color:'#3B5BDB' },
+    { id:'crypto',   name:'Crypto & Web3',     color:'#8B7FD6' },
+    { id:'growth',   name:'Growth & Marketing',color:'#E09A4E' },
+    { id:'creators', name:'Creators',          color:'#CC5F52' },
+    { id:'fintech',  name:'Fintech Analysts',  color:'#4E9A6E' },
+  ],
+  nodes:[
+    { id:'dr_aris',      label:'@dr_aris',      cluster:'dev',      influence:98, followers:2100000, bridge:true  },
+    { id:'miraquant',    label:'@miraquant',    cluster:'crypto',   influence:93, followers:1450000, bridge:true  },
+    { id:'ByteTheory',   label:'ByteTheory',    cluster:'creators', influence:90, followers:980000,  bridge:false },
+    { id:'growth_henry', label:'@growth_henry', cluster:'growth',   influence:86, followers:640000,  bridge:true  },
+    { id:'fintwit_elle', label:'@fintwit_elle', cluster:'fintech',  influence:82, followers:520000,  bridge:true  },
+    { id:'nova_dev',     label:'@nova_dev',     cluster:'dev',      influence:74, followers:310000,  bridge:false },
+    { id:'chainfox',     label:'@chainfox',     cluster:'crypto',   influence:71, followers:280000,  bridge:false },
+    { id:'mktg_sana',    label:'@mktg_sana',    cluster:'growth',   influence:68, followers:245000,  bridge:false },
+    { id:'lucia_marin',  label:'@lucia_marin',  cluster:'creators', influence:64, followers:198000,  bridge:false },
+    { id:'vault_alpha',  label:'@vault_alpha',  cluster:'fintech',  influence:59, followers:176000,  bridge:false },
+    { id:'anna.builds',  label:'@anna.builds',  cluster:'dev',      influence:55, followers:154000,  bridge:false },
+    { id:'coinlore_daily',label:'@coinlore_dly',cluster:'crypto',   influence:52, followers:141000,  bridge:false },
+    { id:'funnelphil',   label:'@funnelphil',   cluster:'growth',   influence:48, followers:128000,  bridge:false },
+    { id:'reelroom',     label:'@reelroom',     cluster:'creators', influence:45, followers:119000,  bridge:false },
+    { id:'yieldwatch',   label:'@yieldwatch',   cluster:'fintech',  influence:41, followers:96000,   bridge:false },
+    { id:'kernelpanic',  label:'@kernelpanic',  cluster:'dev',      influence:38, followers:88000,   bridge:false },
+    { id:'hashrabbit',   label:'@hashrabbit',   cluster:'crypto',   influence:34, followers:76000,   bridge:false },
+    { id:'leadsleuth',   label:'@leadsleuth',   cluster:'growth',   influence:31, followers:67000,   bridge:false },
+    { id:'loopster',     label:'@loopster',     cluster:'creators', influence:27, followers:58000,   bridge:false },
+    { id:'candlewick',   label:'@candlewick',   cluster:'fintech',  influence:23, followers:49000,   bridge:false },
+  ],
+  /* undirected edges: [a, b, weight] */
+  edges:[
+    ['dr_aris','nova_dev',9],['dr_aris','anna.builds',7],['dr_aris','kernelpanic',6],
+    ['dr_aris','growth_henry',5],['dr_aris','ByteTheory',6],['nova_dev','anna.builds',8],
+    ['nova_dev','kernelpanic',7],['anna.builds','kernelpanic',5],['nova_dev','ByteTheory',4],
+    ['miraquant','chainfox',9],['miraquant','coinlore_daily',7],['miraquant','hashrabbit',6],
+    ['miraquant','fintwit_elle',5],['miraquant','vault_alpha',4],['chainfox','coinlore_daily',8],
+    ['chainfox','hashrabbit',6],['coinlore_daily','hashrabbit',5],['chainfox','vault_alpha',3],
+    ['growth_henry','mktg_sana',8],['growth_henry','funnelphil',6],['growth_henry','leadsleuth',5],
+    ['growth_henry','dr_aris',5],['growth_henry','ByteTheory',4],['mktg_sana','funnelphil',7],
+    ['mktg_sana','leadsleuth',5],['funnelphil','leadsleuth',6],
+    ['ByteTheory','lucia_marin',8],['ByteTheory','reelroom',6],['ByteTheory','loopster',5],
+    ['lucia_marin','reelroom',7],['lucia_marin','loopster',4],['reelroom','loopster',5],
+    ['fintwit_elle','vault_alpha',7],['fintwit_elle','yieldwatch',6],['fintwit_elle','candlewick',4],
+    ['vault_alpha','yieldwatch',6],['vault_alpha','candlewick',4],['yieldwatch','candlewick',5],
+    ['fintwit_elle','miraquant',5],['dr_aris','miraquant',3],['growth_henry','miraquant',3],
+    ['ByteTheory','dr_aris',6],['kernelpanic','chainfox',2],['loopster','anna.builds',2],
+    ['candlewick','coinlore_daily',3],['leadsleuth','reelroom',2],['funnelphil','growth_henry',6],
+  ],
+};
+
+/* ---------- Pipeline widget ---------- */
+SURVIX.pipeline = {
+  throughput:'1,842 rec/s',
+  updated:'just now',
+  rows:SURVIX.platforms.filter(p=>p.ingest!=='idle').map(p=>({ id:p.id, name:p.name, state:p.ingest, latency:p.latency, volume:p.rows })),
+};
+
+</script>
+<script>
+/* ============================================================
+   SurviX — Chart Engine (dependency-free canvas renderers)
+   Exports: SX.charts.{line, donut, hbars, cloud, sparks}, SX.Network
+   ============================================================ */
+
+(function(){
+'use strict';
+
+const SX = (window.SX = window.SX || {});
+SX.charts = {};
+const charts = SX.charts;
+const registry = [];
+
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const lerp=(a,b,t)=>a+(b-a)*t;
+
+/* Auto-refresh all charts on resize (debounced) */
+window.addEventListener('resize', ()=>{
+  clearTimeout(charts._rt);
+  charts._rt = setTimeout(()=>registry.forEach(c=>{ if(c&&c._redraw) c._redraw(); }), 160);
+});
+
+/* ---------- shared helpers ---------- */
+function hexA(hex, a){
+  const h = hex.replace('#','');
+  const n = parseInt(h.length===3 ? h.split('').map(c=>c+c).join('') : h, 16);
+  return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;
+}
+function roundRect(ctx,x,y,w,h,r){
+  r = Math.min(r, w/2, h/2);
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);     ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+function fitCanvas(canvas, wrap, wantH){
+  const dpr = window.devicePixelRatio || 1;
+  const w = Math.max((wrap||canvas.parentElement).clientWidth, 240);
+  const h = wantH || canvas._h || 260;
+  canvas.width = Math.round(w*dpr); canvas.height = Math.round(h*dpr);
+  canvas.style.height = h+'px';
+  canvas._h = h;
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  return { ctx, w, h };
+}
+function tipEl(){ return document.getElementById('tip'); }
+function showTip(html, x, y){
+  const t = tipEl(); if(!t) return;
+  t.innerHTML = html; t.style.opacity = 1;
+  const r = t.getBoundingClientRect();
+  let left = x+14, top = y+14;
+  if(left + r.width > window.innerWidth-10)  left = x - r.width - 14;
+  if(top  + r.height > window.innerHeight-10) top = y - r.height - 14;
+  t.style.left = left+'px'; t.style.top = top+'px';
+}
+function hideTip(){ const t = tipEl(); if(t) t.style.opacity = 0; }
+
+function niceTicks(min, max, n){
+  const span = max-min || 1;
+  const step0 = span/Math.max(n,1);
+  const mag = Math.pow(10, Math.floor(Math.log10(step0)));
+  const norm = step0/mag;
+  const step = (norm>=5?10:norm>=2?5:norm>=1?2:1)*mag;
+  const start = Math.ceil(min/step)*step;
+  const out = [];
+  for(let v=start; v<=max+1e-9; v+=step) out.push(v);
+  return out;
+}
+const fmtNum = v => v>=1e6 ? (v/1e6).toFixed(1).replace(/\.0$/,'')+'M' : v>=1e3 ? (v/1e3).toFixed(1).replace(/\.0$/,'')+'K' : String(Math.round(v));
+function drawGridY(ctx, x0, x1, y0, y1, maxV){
+  const ticks = niceTicks(0, maxV, 4);
+  ctx.font = '10px IBM Plex Mono, monospace';
+  ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+  ticks.forEach(v=>{
+    const y = y1 - (v/maxV)*(y1-y0);
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(43,33,27,.08)';
+    ctx.beginPath(); ctx.moveTo(x0, y+.5); ctx.lineTo(x1, y+.5); ctx.stroke();
+    ctx.fillStyle = '#6B7686';
+    ctx.fillText(fmtNum(v), x0-7, y);
+  });
+  return maxV;
+}
+
+/* ============================================================
+   LINE / AREA CHART — multi-series with hover crosshair
+   ============================================================ */
+charts.line = function(opts){
+  const { canvas, dates, series, height=260, yMax, area=true, yFormat='pct' } = opts;
+  const wrap = canvas.parentElement;
+  let geo = null;
+
+  function draw(){
+    const { ctx, w, h } = fitCanvas(canvas, wrap, height);
+    const padL = yFormat==='none' ? 10 : 38, padR = 12, padT = 12, padB = 22;
+    const x0=padL, x1=w-padR, y0=padT, y1=h-padB;
+    const n = dates.length;
+    const allVals = series.flatMap(s=>s.data);
+    const maxV = yMax != null ? yMax : Math.max(...allVals)*1.12;
+
+    if(yFormat!=='none') drawGridY(ctx, x0, x1, y0, y1, maxV);
+
+    /* x labels: first, mid, last, event markers */
+    ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.fillStyle='#6B7686'; ctx.font='10px IBM Plex Mono, monospace';
+    [0, Math.floor((n-1)/2), n-1].forEach(i=>{
+      const x = x0 + (i/(n-1))*(x1-x0);
+      ctx.fillText(dates[i].slice(5), x, y1+7);
+    });
+
+    const X = i => x0 + (n===1?0:(i/(n-1))*(x1-x0));
+    const Y = v => y1 - clamp(v/maxV,0,1)*(y1-y0);
+
+    series.forEach(s=>{
+      const pts = s.data.map((v,i)=>[X(i), Y(v)]);
+      if(area && s.fill!==false){
+        ctx.beginPath();
+        pts.forEach((p,i)=> i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));
+        ctx.lineTo(pts[pts.length-1][0], y1); ctx.lineTo(pts[0][0], y1); ctx.closePath();
+        ctx.fillStyle = hexA(s.color,.07); ctx.fill();
+      }
+      ctx.beginPath();
+      pts.forEach((p,i)=> i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));
+      ctx.strokeStyle = s.color; ctx.lineWidth = s.width||1.6;
+      ctx.lineJoin='round'; ctx.lineCap='round';
+      if(s.dash) ctx.setLineDash(s.dash); 
+      ctx.stroke();
+      ctx.setLineDash([]);
+    });
+
+    geo = { x0, x1, y0, y1, X, Y, n, maxV };
+  }
+
+  canvas.addEventListener('mousemove', e=>{
+    if(!geo) return;
+    const r = canvas.getBoundingClientRect();
+    const mx = e.clientX - r.left, my = e.clientY - r.top;
+    const i = clamp(Math.round(((mx-geo.x0)/(geo.x1-geo.x0))*(geo.n-1)), 0, geo.n-1);
+    const cx = geo.X(i);
+    const ctx = canvas.getContext('2d');
+    draw();
+    /* crosshair */
+    ctx.strokeStyle='rgba(91,127,212,.45)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(cx, geo.y0); ctx.lineTo(cx, geo.y1); ctx.stroke();
+    series.forEach(s=>{
+      const v = s.data[i]; if(v==null) return;
+      ctx.beginPath(); ctx.arc(cx, geo.Y(v), 3.5, 0, Math.PI*2);
+      ctx.fillStyle = s.color; ctx.fill();
+      ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = 1.5; ctx.stroke();
+    });
+    const rows = series.map(s=>`<div class="row"><i style="background:${s.color}"></i>${s.name}: <b>${yFormat==='pct'?s.data[i]+'%':fmtNum(s.data[i])}</b></div>`).join('');
+    showTip(`<b>${dates[i]}</b>${rows}`, e.clientX, e.clientY);
+  });
+  canvas.addEventListener('mouseleave', ()=>{ hideTip(); draw(); });
+
+  draw();
+  const h = { _redraw: draw, _type:'line' };
+  registry.push(h);
+  return h;
+};
+
+/* ============================================================
+   DONUT CHART — with center label & hover
+   ============================================================ */
+charts.donut = function(opts){
+  const { canvas, data, height=240, centerLabel } = opts;
+  const wrap = canvas.parentElement;
+  let arcs = [];
+
+  function draw(hoverIdx=-1){
+    const { ctx, w, h } = fitCanvas(canvas, wrap, height);
+    const total = data.reduce((a,d)=>a+d.pct,0);
+    const cx=w/2, cy=h/2, R=Math.min(w,h)/2-6, r=R*0.62;
+    arcs = [];
+    let a0 = -Math.PI/2;
+    data.forEach((d,i)=>{
+      const a1 = a0 + (d.pct/total)*Math.PI*2;
+      const hov = i===hoverIdx;
+      const mid = (a0+a1)/2, off = hov?5:0;
+      const ccx = cx+Math.cos(mid)*off, ccy = cy+Math.sin(mid)*off;
+      ctx.beginPath();
+      ctx.arc(ccx,ccy,R,a0+0.008,a1-0.008);
+      ctx.arc(ccx,ccy,r,a1-0.008,a0+0.008,true);
+      ctx.closePath();
+      ctx.fillStyle = hexA(d.color, hov?1:.88);
+      ctx.fill();
+      if(hov){ ctx.strokeStyle='#1E2A3B'; ctx.lineWidth=1.6; ctx.stroke(); }
+      arcs.push({ a0, a1, i });
+      a0 = a1;
+    });
+    /* center */
+    ctx.textAlign='center';
+    ctx.fillStyle='#1E2A3B'; ctx.font='500 19px IBM Plex Mono, monospace';
+    ctx.textBaseline='middle';
+    const sel = hoverIdx>=0 ? data[hoverIdx] : null;
+    ctx.fillText(sel ? sel.pct+'%' : (centerLabel||total+'%'), cx, cy-6);
+    ctx.fillStyle='#6B7686'; ctx.font='500 8.5px IBM Plex Mono, monospace';
+    ctx.fillText(sel ? sel.name.toUpperCase() : (centerSub||'ALL SIGNALS'), cx, cy+12);
+  }
+  let centerSub = opts.centerSub || '';
+
+  canvas.addEventListener('mousemove', e=>{
+    const r = canvas.getBoundingClientRect();
+    const cx=r.left+r.width/2, cy=r.top+r.height/2;
+    const ang = Math.atan2(e.clientY-cy, e.clientX-cx);
+    let idx=-1;
+    arcs.forEach(a=>{ 
+      let d = ang - a.a0;
+      const span = a.a1-a.a0;
+      d = ((d%(Math.PI*2))+Math.PI*2)%(Math.PI*2);
+      if(d<=span) idx=a.i;
+    });
+    if(idx!==-1){
+      draw(idx);
+      const d = data[idx];
+      showTip(`<b>${d.name}</b><div class="row"><i style="background:${d.color}"></i>Share: <b>${d.pct}%</b></div>`, e.clientX, e.clientY);
+    } else { draw(); hideTip(); }
+  });
+  canvas.addEventListener('mouseleave', ()=>{ draw(); hideTip(); });
+
+  draw();
+  const h = { _redraw: draw, _type:'donut' };
+  registry.push(h);
+  return h;
+};
+
+/* ============================================================
+   HORIZONTAL BARS — animated, with value labels
+   ============================================================ */
+charts.hbars = function(opts){
+  const { canvas, data, height, color='#5B7FD4', suffix='%', mono=true } = opts;
+  const wrap = canvas.parentElement;
+  const H = height || data.length*30+8;
+  let progress = 0;
+
+  function draw(){
+    const { ctx, w, h } = fitCanvas(canvas, wrap, H);
+    progress = Math.min(1, progress+0.08);
+    const p = 1-Math.pow(1-progress,3);
+    const rowH = h/data.length;
+    const maxV = Math.max(...data.map(d=>d.pct));
+    const maxW = w-56;
+    data.forEach((d,i)=>{
+      const top = i*rowH;
+      /* label above bar (any length) */
+      ctx.fillStyle='#3E4C61'; ctx.font='500 10px Inter, sans-serif';
+      ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+      ctx.fillText(d.label, 0, top+11, maxW-40);
+      const by = top+16, bh = rowH-22;
+      const bw = (d.pct/maxV)*maxW*p;
+      ctx.fillStyle='#EDF0F5';
+      roundRect(ctx, 0, by, maxW, bh, 1); ctx.fill();
+      ctx.strokeStyle='#D8DDE6'; ctx.lineWidth=1; ctx.stroke(); /* hairline track border, matches .track/.bar */
+      ctx.fillStyle = hexA(color,.9);
+      roundRect(ctx, 0, by, Math.max(bw,2), bh, 1); ctx.fill();
+      ctx.fillStyle='#1E2A3B'; ctx.font=(mono?'500 10px IBM Plex Mono, monospace':'500 10px Inter');
+      ctx.textAlign='right'; ctx.textBaseline='alphabetic';
+      ctx.fillText(d.pct+suffix, w-2, by+bh-1);
+    });
+  }
+  let frames=0;
+  const tick=()=>{ draw(); frames++; if(frames<18) requestAnimationFrame(tick); };
+  tick();
+  const h = { _redraw: draw, _type:'hbars' };
+  registry.push(h);
+  return h;
+};
+
+/* ============================================================
+   SPARKLINE (tiny, no axes)
+   ============================================================ */
+charts.spark = function(canvas, data, color, area=true){
+  const w = canvas.parentElement.clientWidth||110, h = canvas.height||34;
+  const dpr = window.devicePixelRatio||1;
+  canvas.width=w*dpr; canvas.height=h*dpr; canvas.style.width=w+'px'; canvas.style.height=h+'px';
+  const ctx = canvas.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
+  const max=Math.max(...data), min=Math.min(...data), span=(max-min)||1;
+  const X=i=>(i/(data.length-1))*(w-4)+2, Y=v=>h-3-((v-min)/span)*(h-8);
+  if(area){
+    ctx.beginPath();
+    data.forEach((v,i)=>i?ctx.lineTo(X(i),Y(v)):ctx.moveTo(X(i),Y(v)));
+    ctx.lineTo(w-2,h); ctx.lineTo(2,h); ctx.closePath(); ctx.fillStyle=hexA(color,.08); ctx.fill();
+  }
+  ctx.beginPath();
+  data.forEach((v,i)=>i?ctx.lineTo(X(i),Y(v)):ctx.moveTo(X(i),Y(v)));
+  ctx.strokeStyle=color; ctx.lineWidth=1.5; ctx.lineJoin='round'; ctx.stroke();
+  ctx.beginPath(); ctx.arc(X(data.length-1), Y(data[data.length-1]), 2, 0, Math.PI*2);
+  ctx.fillStyle=color; ctx.fill();
+};
+
+/* ============================================================
+   WORD CLOUD — spiral placement, weight-scaled, two-tone
+   ============================================================ */
+charts.cloud = function(container, words, opts={}){
+  const H = opts.height || 240;
+  container.innerHTML='';
+  const c = document.createElement('canvas');
+  container.appendChild(c);
+  function draw(){
+    const dpr = window.devicePixelRatio||1;
+    const W = Math.max(container.clientWidth, 260);
+    c.width=W*dpr; c.height=H*dpr; c.style.width=W+'px'; c.style.height=H+'px';
+    const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.clearRect(0,0,W,H);
+    const maxS = Math.max(...words.map(w=>w.s)), minS = Math.min(...words.map(w=>w.s));
+    const placed = [];
+    const palette = opts.colors || ['#5B7FD4','#A9B4C9','#7A8CD8','#4E9A6E','#5B7FD4','#E09A4E'];
+    words.forEach((word, idx)=>{
+      const t = (word.s-minS)/(maxS-minS||1);
+      const size = Math.round(11 + t*24);
+      ctx.font = `${t>0.55?600:500} ${size}px Inter, sans-serif`;
+      const tw = ctx.measureText(word.w).width;
+      let x=W/2, y=H/2, angle = (idx*0.9)%(Math.PI*2);
+      let ok=false;
+      for(let step=0; step<420 && !ok; step++){
+        const rx=(W/2-30)*Math.sqrt(step/420), ry=(H/2-24)*Math.sqrt(step/420);
+        x = W/2 + Math.cos(angle)*rx*1.4; y = H/2 + Math.sin(angle)*ry*1.6;
+        angle += 0.35;
+        ok = placed.every(p=>{
+          const px=Math.abs(p.x-x)<(p.w+tw)/2+8, py=Math.abs(p.y-y)<Math.max(p.s,size)*0.72+6;
+          return !(px&&py);
+        });
+        x = clamp(x, tw/2+6, W-tw/2-6); y = clamp(y, size*0.7, H-6);
+      }
+      if(!ok) return;
+      placed.push({x,y,w:tw,s:size});
+      const col = t>0.72 ? '#5B7FD4' : palette[idx%palette.length];
+      ctx.save();
+      ctx.translate(x,y);
+      ctx.globalAlpha = 0.55+t*0.45;
+      ctx.fillStyle = col;
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(word.w, 0, 0);
+      ctx.restore();
+    });
+  }
+  draw();
+  const h={_redraw:draw,_type:'cloud'};
+  registry.push(h);
+  return h;
+};
+
+/* ============================================================
+   COMBO CHART — bars (volume) + overlaid line (sentiment)
+   ============================================================ */
+charts.combo = function(opts){
+  const { canvas, dates, bars, line, height=280, lineMax=10 } = opts;
+  const wrap = canvas.parentElement;
+  let geo = null;
+
+  function draw(){
+    const { ctx, w, h } = fitCanvas(canvas, wrap, height);
+    const padL=40, padR=40, padT=12, padB=22;
+    const x0=padL, x1=w-padR, y0=padT, y1=h-padB;
+    const n = dates.length;
+    const maxB = Math.max(...bars)*1.15;
+
+    /* left axis = volume */
+    drawGridY(ctx, x0, x1, y0, y1, maxB);
+    /* right axis = sentiment 0..10 */
+    ctx.font='10px IBM Plex Mono, monospace'; ctx.textAlign='left'; ctx.textBaseline='middle';
+    [0,2.5,5,7.5,10].forEach(v=>{
+      const y = y1-(v/10)*(y1-y0);
+      ctx.fillStyle='#6B7686';
+      ctx.fillText(v.toFixed(1), x1+6, y);
+    });
+
+    /* x labels */
+    ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.fillStyle='#6B7686';
+    [0, Math.floor((n-1)/2), n-1].forEach(i=>{
+      const x = x0+(i/(n-1))*(x1-x0);
+      ctx.fillText(dates[i].slice(5), x, y1+7);
+    });
+
+    const X = i => x0+(i/(n-1))*(x1-x0);
+    const slot = (x1-x0)/n;
+
+    /* bars */
+    bars.forEach((v,i)=>{
+      const bh = (v/maxB)*(y1-y0);
+      const bw = Math.min(slot*0.56, 18);
+      const bx = X(i)-bw/2;
+      ctx.fillStyle='rgba(91,127,212,.34)'; /* muted blue bars */
+      roundRect(ctx, bx, y1-bh, bw, bh, 1); ctx.fill();
+    });
+
+    /* line */
+    const LY = v => y1-(clamp(v/lineMax,0,1))*(y1-y0);
+    const pts = line.map((v,i)=>[X(i), LY(v)]);
+    ctx.beginPath();
+    pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));
+    ctx.lineTo(pts[n-1][0],y1); ctx.lineTo(pts[0][0],y1); ctx.closePath();
+    ctx.fillStyle=hexA('#5B7FD4',.06); ctx.fill();
+    ctx.beginPath();
+    pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));
+    ctx.strokeStyle='#5B7FD4'; ctx.lineWidth=1.6; ctx.lineJoin='round'; ctx.stroke();
+    /* end dot */
+    ctx.beginPath(); ctx.arc(pts[n-1][0],pts[n-1][1],3.4,0,Math.PI*2);
+    ctx.fillStyle='#5B7FD4'; ctx.fill();
+
+    geo = { x0,x1,y0,y1,X,n,bars,line,dates,LY };
+  }
+
+  canvas.addEventListener('mousemove', e=>{
+    if(!geo) return;
+    const r=canvas.getBoundingClientRect();
+    const mx=e.clientX-r.left;
+    const i=clamp(Math.round(((mx-geo.x0)/(geo.x1-geo.x0))*(geo.n-1)),0,geo.n-1);
+    const cx=geo.X(i);
+    const ctx=canvas.getContext('2d');
+    draw();
+    ctx.strokeStyle='rgba(91,127,212,.45)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(cx,geo.y0); ctx.lineTo(cx,geo.y1); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, geo.LY(geo.line[i]), 3.5, 0, Math.PI*2);
+    ctx.fillStyle='#5B7FD4'; ctx.fill(); ctx.strokeStyle='#FFFFFF'; ctx.lineWidth=1.5; ctx.stroke();
+    showTip(`<b>${geo.dates[i]}</b><div class="row"><i style="background:#7A8CD8"></i>Engagement: <b>${fmtNum(geo.bars[i])}</b></div><div class="row"><i style="background:#5B7FD4"></i>Sentiment: <b>${geo.line[i].toFixed(1)}/10</b></div>`, e.clientX, e.clientY);
+  });
+  canvas.addEventListener('mouseleave', ()=>{ hideTip(); draw(); });
+
+  draw();
+  const hnd={_redraw:draw,_type:'combo'}; registry.push(hnd); return hnd;
+};
+
+/* ============================================================
+   SCRUBBER CHART — sentiment area + draggable playhead + events
+   ============================================================ */
+charts.scrubber = function(opts){
+  const { canvas, dates, series, events=[], height=230, yMax=100 } = opts;
+  const wrap = canvas.parentElement;
+  let geo=null, pos=null; /* pos = selected day index */
+
+  function draw(){
+    const { ctx, w, h } = fitCanvas(canvas, wrap, height);
+    const padL=34, padR=12, padT=10, padB=26;
+    const x0=padL,x1=w-padR,y0=padT,y1=h-padB-8;
+    const n=dates.length;
+    const X=i=>x0+(i/(n-1))*(x1-x0);
+    const Y=v=>y1-clamp(v/yMax,0,1)*(y1-y0);
+
+    drawGridY(ctx,x0,x1,y0,y1,yMax);
+    ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.fillStyle='#6B7686'; ctx.font='10px IBM Plex Mono, monospace';
+    [0,Math.floor((n-1)/2),n-1].forEach(i=>ctx.fillText(dates[i].slice(5),X(i),y1+14));
+
+    /* stacked areas: positive / neutral / negative */
+    const P = opts.colors || { positive:'#4E9A6E', neutral:'#8894A6', negative:'#CC5F52' };
+    const stack = [
+      { key:'positive', color:P.positive },
+      { key:'neutral',  color:P.neutral },
+      { key:'negative', color:P.negative },
+    ];
+    let base = new Array(n).fill(0);
+    stack.forEach(s=>{
+      const d = series[s.key];
+      const top = d.map((v,i)=>base[i]+v);
+      ctx.beginPath();
+      top.forEach((v,i)=>i?ctx.lineTo(X(i),Y(v)):ctx.moveTo(X(i),Y(v)));
+      for(let i=n-1;i>=0;i--) ctx.lineTo(X(i),Y(base[i]));
+      ctx.closePath();
+      ctx.fillStyle = hexA(s.color,.28); ctx.fill();
+      ctx.beginPath();
+      top.forEach((v,i)=>i?ctx.lineTo(X(i),Y(v)):ctx.moveTo(X(i),Y(v)));
+      ctx.strokeStyle = hexA(s.color,.85); ctx.lineWidth=1.4; ctx.stroke();
+      base = top;
+    });
+
+    /* event pins */
+    events.forEach(ev=>{
+      const i = dates.indexOf(ev.date);
+      if(i<0) return;
+      const x=X(i), on = pos===i;
+      ctx.beginPath(); ctx.moveTo(x,y0+2); ctx.lineTo(x,y1); ctx.setLineDash([3,3]);
+      ctx.strokeStyle = on ? 'rgba(91,127,212,.9)' : 'rgba(91,127,212,.35)';
+      ctx.lineWidth=1; ctx.stroke(); ctx.setLineDash([]);
+      ctx.beginPath(); ctx.arc(x,y0+2,on?5:3.6,0,Math.PI*2);
+      ctx.fillStyle = on ? '#5B7FD4' : 'rgba(91,127,212,.7)';
+      ctx.fill();
+    });
+
+    /* playhead */
+    if(pos!=null){
+      const x=X(pos);
+      ctx.beginPath(); ctx.moveTo(x,y0); ctx.lineTo(x,y1+6);
+      ctx.strokeStyle='#1E2A3B'; ctx.lineWidth=1.4; ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x-5,y1+6); ctx.lineTo(x+5,y1+6); ctx.lineTo(x,y1+13); ctx.closePath();
+      ctx.fillStyle='#1E2A3B'; ctx.fill();
+    }
+    geo={x0,x1,y0,y1,X,n};
+  }
+
+  function pickDay(e){
+    if(!geo) return null;
+    const r=canvas.getBoundingClientRect();
+    const mx=e.clientX-r.left;
+    return clamp(Math.round(((mx-geo.x0)/(geo.x1-geo.x0))*(geo.n-1)),0,geo.n-1);
+  }
+  canvas.addEventListener('mousemove', e=>{
+    if(!geo) return;
+    const i=pickDay(e);
+    const ctx=canvas.getContext('2d');
+    draw();
+    const x=geo.X(i);
+    ctx.strokeStyle='rgba(43,33,27,.28)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(x,geo.y0); ctx.lineTo(x,geo.y1); ctx.stroke();
+    const ev = events.find(ev=>ev.date===dates[i]);
+    showTip(`<b>${dates[i]}${ev?' · EVT: '+ev.title:''}</b>`+
+      `<div class="row"><i style="background:#4E9A6E"></i>Positive: <b>${series.positive[i]}%</b></div>`+
+      `<div class="row"><i style="background:#7A8CD8"></i>Neutral: <b>${series.neutral[i]}%</b></div>`+
+      `<div class="row"><i style="background:#CC5F52"></i>Negative: <b>${series.negative[i]}%</b></div>`, e.clientX, e.clientY);
+  });
+  canvas.addEventListener('mouseleave', ()=>{ hideTip(); draw(); if(onPick) onPick(pos); });
+  canvas.addEventListener('click', e=>{
+    const i=pickDay(e);
+    pos=i; draw();
+    if(onPick) onPick(i);
+  });
+  let onPick=null;
+
+  draw();
+  const hnd={
+    _redraw:draw,_type:'scrub',
+    setDay(i){ pos=i; draw(); },
+    onPick(fn){ onPick=fn; },
+    clear(){ pos=null; draw(); },
+  };
+  registry.push(hnd); return hnd;
+};
+
+/* ============================================================
+   NETWORK GRAPH — force-directed, interactive, spread animation
+   ============================================================ */
+SX.Network = function(opts){
+  const { canvas, nodes, edges, clusters, onNodeSelect } = opts;
+  canvas._h = opts.height || 480;
+  const clusterMap = {}; clusters.forEach(c=>clusterMap[c.id]=c);
+  const N = nodes.map(n=>({
+    ...n,
+    x: 0, y: 0, vx: 0, vy: 0,
+    r: 8 + (n.influence/100)*16,
+    color: clusterMap[n.cluster] ? clusterMap[n.cluster].color : '#3E4C61',
+    cls: clusterMap[n.cluster] ? clusterMap[n.cluster].name : 'Other',
+  }));
+  const E = edges.map(e=>({ a:N.find(n=>n.id===e[0]), b:N.find(n=>n.id===e[1]), w:e[2] })).filter(e=>e.a&&e.b);
+  const W = ()=>canvas.parentElement.clientWidth;
+  const H = ()=>canvas._h;
+
+  /* size canvas to its container (dpr-aware) */
+  function sizeCanvas(){
+    const dpr = window.devicePixelRatio||1;
+    const w = Math.max(W(), 240);
+    canvas.width = Math.round(w*dpr);
+    canvas.height = Math.round(H()*dpr);
+    canvas.style.width = w+'px';
+    canvas.style.height = H()+'px';
+  }
+  sizeCanvas();
+  canvas.style.cursor='default';
+  window.addEventListener('resize', ()=>{
+    sizeCanvas();
+    N.forEach(n=>{ n.x=clamp(n.x, n.r+6, W()-n.r-6); n.y=clamp(n.y, n.r+6, H()-n.r-6); });
+  });
+
+  /* init positions in a circle */
+  N.forEach((n,i)=>{
+    const a = (i/N.length)*Math.PI*2;
+    n.x = W()/2 + Math.cos(a)*(W()*0.30);
+    n.y = H()/2 + Math.sin(a)*(H()*0.32);
+  });
+
+  /* adjacency for spread BFS */
+  const adj = {};
+  E.forEach(e=>{
+    (adj[e.a.id]=adj[e.a.id]||[]).push(e.b.id);
+    (adj[e.b.id]=adj[e.b.id]||[]).push(e.a.id);
+  });
+
+  let alpha = 1, running = true, hover = null, selected = null;
+  let drag = null, dragging = false, moved = 0;
+  const spread = { active:false, phase:0, reached:new Set(), front:[] };
+  /* per-node diffusion burst rings (1 → 0), fired as each spread wave lands */
+
+  /* ---------- simulation ---------- */
+  function step(){
+    if(!running) return;
+    alpha = Math.max(alpha*0.996, 0.03);
+    /* repulsion */
+    for(let i=0;i<N.length;i++){
+      const a=N[i];
+      for(let j=i+1;j<N.length;j++){
+        const b=N[j];
+        let dx=b.x-a.x, dy=b.y-a.y;
+        let d2=dx*dx+dy*dy; if(d2<1) d2=1;
+        const f = 2600/d2;
+        const d = Math.sqrt(d2);
+        dx/=d; dy/=d;
+        a.vx-=dx*f; a.vy-=dy*f;
+        b.vx+=dx*f; b.vy+=dy*f;
+      }
+      /* centering */
+      a.vx += (W()/2-a.x)*0.0016;
+      a.vy += (H()/2-a.y)*0.0018;
+    }
+    /* spring attraction */
+    E.forEach(e=>{
+      let dx=e.b.x-e.a.x, dy=e.b.y-e.a.y;
+      const d=Math.sqrt(dx*dx+dy*dy)||1;
+      const target = 130 - e.w*6;
+      const f = (d-target)*0.0035*(e.w/9);
+      dx/=d; dy/=d;
+      e.a.vx+=dx*f*d*0.05; e.a.vy+=dy*f*d*0.05;
+      e.b.vx-=dx*f*d*0.05; e.b.vy-=dy*f*d*0.05;
+    });
+    N.forEach(n=>{
+      if(n===drag) return;
+      n.vx*=0.86; n.vy*=0.86;
+      n.x+=n.vx; n.y+=n.vy;
+      n.x = clamp(n.x, n.r+6, W()-n.r-6);
+      n.y = clamp(n.y, n.r+6, H()-n.r-6);
+    });
+  }
+
+  /* ---------- render ---------- */
+  function render(){
+    const dpr = window.devicePixelRatio||1;
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.clearRect(0,0,W(),H());
+
+    const dim = n => (selected && selected!==n && !adj[selected.id]?.includes(n.id)) ? 0.13 : 1;
+
+    /* edges */
+    E.forEach(e=>{
+      const focus = selected && (e.a===selected||e.b===selected);
+      ctx.beginPath();
+      ctx.moveTo(e.a.x, e.a.y); ctx.lineTo(e.b.x, e.b.y);
+      const g = ctx.createLinearGradient(e.a.x,e.a.y,e.b.x,e.b.y);
+      const aCol = hexA(e.a.color, 0.5*dim(e.a)), bCol = hexA(e.b.color, 0.5*dim(e.b));
+      g.addColorStop(0,aCol); g.addColorStop(1,bCol);
+      ctx.strokeStyle = focus ? 'rgba(91,127,212,.75)' : g;
+      ctx.lineWidth = focus ? 2 : 0.6+e.w*0.16;
+      ctx.stroke();
+      /* spread pulse travelling along edges */
+      if(spread.active && spread.reached.has(e.a.id) && !spread.reached.has(e.b.id) ||
+         spread.active && spread.reached.has(e.b.id) && !spread.reached.has(e.a.id)){
+        const t = (spread.phase%1);
+        const reached = spread.reached.has(e.a.id) ? e.a : e.b;
+        const other = reached===e.a ? e.b : e.a;
+        const px = lerp(reached.x, other.x, t), py = lerp(reached.y, other.y, t);
+        ctx.beginPath(); ctx.arc(px, py, 3.2, 0, Math.PI*2);
+        ctx.fillStyle='#5B7FD4';
+        ctx.fill();
+      }
+    });
+
+    /* nodes */
+    N.forEach(n=>{
+      const isSel = n===selected, isHov = n===hover;
+      const reach = spread.reached.has(n.id);
+      ctx.globalAlpha = reach?1:dim(n);
+      if(reach){
+        ctx.beginPath(); ctx.arc(n.x,n.y,n.r+6,0,Math.PI*2);
+        ctx.fillStyle = hexA('#5B7FD4',.18); ctx.fill();
+      }
+      /* diffusion burst ring — pulses on the frame the node is newly reached */
+      if(n._burst>0){
+        ctx.beginPath(); ctx.arc(n.x,n.y,n.r+4+(1-n._burst)*16,0,Math.PI*2);
+        ctx.strokeStyle = hexA('#5B7FD4', n._burst*.85);
+        ctx.lineWidth = 1.6;
+        ctx.stroke();
+        n._burst = Math.max(0, n._burst-0.02);
+      }
+      /* influence halo */
+      if(n.influence>=80){
+        ctx.beginPath(); ctx.arc(n.x,n.y,n.r+4,0,Math.PI*2);
+        ctx.strokeStyle = hexA(n.color,.5); ctx.lineWidth=1.4; ctx.stroke();
+      }
+      if(n.bridge){
+        ctx.beginPath(); ctx.arc(n.x,n.y,n.r+8,0,Math.PI*2);
+        ctx.strokeStyle = hexA(n.color,.22); ctx.setLineDash([2,4]); ctx.stroke(); ctx.setLineDash([]);
+      }
+      ctx.beginPath(); ctx.arc(n.x,n.y,n.r,0,Math.PI*2);
+      ctx.fillStyle=hexA(n.color, .88); ctx.fill();
+      if(isSel||isHov){
+        ctx.strokeStyle = isSel?'#1E2A3B':'rgba(43,33,27,.5)';
+        ctx.lineWidth=1.6; ctx.stroke();
+      }
+      /* label */
+      if(n.influence>=55 || isSel || isHov || reach){
+        ctx.globalAlpha = 1;
+        ctx.font = (isSel?'700 ':'600 ')+'10.5px Inter, sans-serif';
+        ctx.textAlign='center'; ctx.textBaseline='top';
+        ctx.fillStyle = isSel?'#1E2A3B':'rgba(118,104,93,.95)';
+        ctx.fillText(n.label, n.x, n.y+n.r+4);
+      }
+      ctx.globalAlpha=1;
+    });
+  }
+
+  /* one frame of sim + paint (factored out so it can be driven manually too) */
+  function frame(){
+    step(); render();
+    if(spread.active){
+      spread.phase += 0.025;
+      /* expand frontier */
+      if(spread.phase>=1){
+        spread.phase = 0;
+        const add = [];
+        spread.reached.forEach(id=>{
+          (adj[id]||[]).forEach(nb=>{ if(!spread.reached.has(nb)) add.push(nb); });
+        });
+        add.forEach(id=>spread.reached.add(id));
+        add.forEach(id=>{ const n=N.find(x=>x.id===id); if(n) n._burst=1; });
+        if(spread.opts && spread.opts.onWave) spread.opts.onWave(spread.reached);
+        if(spread.reached.size>=N.length){ spread.active=false; if(spread.opts&&spread.opts.onDone) spread.opts.onDone(); }
+      }
+    }
+  }
+
+  function loop(){
+    if(running){
+      frame();
+    }
+    requestAnimationFrame(loop);
+  }
+
+  /* ---------- interaction ---------- */
+  function pick(mx,my){
+    for(let i=N.length-1;i>=0;i--){
+      const n=N[i];
+      const dx=mx-n.x, dy=my-n.y;
+      if(dx*dx+dy*dy < (n.r+6)*(n.r+6)) return n;
+    }
+    return null;
+  }
+  canvas.addEventListener('mousemove', e=>{
+    const r=canvas.getBoundingClientRect();
+    const mx=e.clientX-r.left, my=e.clientY-r.top;
+    if(drag){
+      drag.x=mx; drag.y=my; drag.vx=0; drag.vy=0; moved++;
+      return;
+    }
+    hover = pick(mx,my);
+    canvas.style.cursor = hover ? 'pointer' : 'grab';
+    if(hover){
+      showTip(`<b>${hover.label}</b><div class="row"><i style="background:${hover.color}"></i>${hover.cls}</div><div class="row">Influence: <b>${hover.influence}/100</b></div><div class="row">Followers: <b>${fmtNum(hover.followers)}</b></div>${hover.bridge?'<div class="row">Cluster bridge</div>':''}`, e.clientX, e.clientY);
+    } else hideTip();
+  });
+  canvas.addEventListener('mousedown', e=>{
+    const r=canvas.getBoundingClientRect();
+    const n=pick(e.clientX-r.left, e.clientY-r.top);
+    if(n){ drag=n; moved=0; alpha=Math.max(alpha,0.25); canvas.style.cursor='grabbing'; }
+  });
+  window.addEventListener('mouseup', ()=>{
+    if(drag && moved<3){ /* click without drag = select node */
+      selected = (selected===drag)?null:drag;
+      onNodeSelect && onNodeSelect(selected);
+    }
+    drag=null;
+    canvas.style.cursor='grab';
+  });
+  canvas.addEventListener('mouseleave', ()=>{ hover=null; hideTip(); canvas.style.cursor='default'; });
+
+  /* ---------- public API ---------- */
+  function relayout(){
+    alpha=1;
+    N.forEach((n,i)=>{
+      const a=(i/N.length)*Math.PI*2 + Math.random()*0.6;
+      n.x=W()/2+Math.cos(a)*(W()*0.3);
+      n.y=H()/2+Math.sin(a)*(H()*0.32);
+      n.vx=n.vy=0;
+    });
+  }
+  function startSpread(o){
+    const origin = N.find(n=>n.id===(o.origin||'dr_aris'));
+    spread.reached = new Set([origin.id]);
+    spread.active = true; spread.phase = 0; spread.opts = o;
+    origin._burst = 1; /* pulse the patient-zero node */
+    if(o.onWave) o.onWave(spread.reached);
+  }
+  function stopSpread(){ spread.active=false; spread.reached=new Set(); N.forEach(n=>{ n._burst=0; }); }
+  function select(id){ selected = id?N.find(n=>n.id===id):null; onNodeSelect && onNodeSelect(selected); }
+  function setRunning(v){ running=v; }
+
+  loop();
+  const api = { relayout, startSpread, stopSpread, select, setRunning, frame, nodes:N, edges:E };
+  canvas._net = api;
+  return api;
+};
+
+})();
+
+</script>
+<script>
+/* ============================================================
+   SurviX — Panels (module renderers)
+   OverviewPanel · SentimentPanel · DemographicsPanel ·
+   TrendsPanel · NetworkPanel
+   ============================================================ */
+
+(function(){
+'use strict';
+const SX = window.SX; const charts = SX.charts; const D = window.SURVIX;
+const fmt = v => v>=1e6 ? (v/1e6).toFixed(1).replace(/\.0$/,'')+'M' : v>=1e3 ? (v/1e3).toFixed(1).replace(/\.0$/,'')+'K' : String(v);
+
+/* ---------- shared bits ---------- */
+const ICONS = {
+  grid:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>',
+  wave:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12h4l3-8 4 16 3-8h6"/></svg>',
+  users:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.2 3.4-5 6.5-5s5.7 1.8 6.5 5"/><circle cx="17.5" cy="9" r="2.5"/><path d="M16 15.2c2.6.3 4.6 1.9 5.3 4.8"/></svg>',
+  trend:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>',
+  net:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="6" r="2.2"/><circle cx="19" cy="5" r="2.2"/><circle cx="12" cy="13" r="2.6"/><circle cx="4.5" cy="18.5" r="2.2"/><circle cx="19.5" cy="18" r="2.2"/><path d="M6.8 7.4l3.4 4M17 6.4l-3.2 5M10.2 14.6l-4 3M13.8 14.8l4 2.4"/></svg>',
+  bolt:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z"/></svg>',
+  eye:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="2.8"/></svg>',
+  msg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M21 12a8 8 0 01-8 8H4l2.2-3.1A8 8 0 1121 12z"/></svg>',
+  heart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 20.5C7 16.5 3 13.3 3 9.4 3 6.9 5 5 7.4 5c1.8 0 3.4 1 4.6 2.7C13.2 6 14.8 5 16.6 5 19 5 21 6.9 21 9.4c0 3.9-4 7.1-9 11.1z"/></svg>',
+  smile:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5c.9 1.2 2.1 1.8 3.5 1.8s2.6-.6 3.5-1.8"/><path d="M9 10h.01M15 10h.01"/></svg>',
+  clock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>',
+  warn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3L2.5 20h19L12 3z"/><path d="M12 10v4.5M12 17.5h.01"/></svg>',
+  shield:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 2l8 3.5v5.7c0 5-3.4 8.6-8 10.8-4.6-2.2-8-5.8-8-10.8V5.5L12 2z"/><path d="M9 11.8l2.2 2.2L15.5 9.5"/></svg>',
+  globe:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.8 2.6 4.2 5.6 4.2 9S14.8 18.4 12 21c-2.8-2.6-4.2-5.6-4.2-9S9.2 5.6 12 3z"/></svg>',
+  cpu:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></svg>',
+  spark:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 2l1.9 6.1L20 10l-6.1 1.9L12 18l-1.9-6.1L4 10l6.1-1.9L12 2z"/></svg>',
+  x:'<path d="M17.2 3H20l-6.6 7.6L21 21h-6.1l-4.8-6.3L4.6 21H1.8l7.1-8.1L1 3h6.3l4.3 5.7L17.2 3zm-1.1 16.2h1.7L6.9 4.7H5.1l11 14.5z" fill="currentColor" stroke="none"/>',
+  telegram:'<path d="M21.9 4.6l-3.1 14.7c-.2 1-.8 1.3-1.7.8l-4.6-3.4-2.2 2.1c-.2.3-.5.4-.9.4l.3-4.7 8.6-7.8c.4-.3-.1-.5-.6-.2L6.9 13.2 2.3 11.8c-1-.3-1-1 .2-1.5l18-6.9c.8-.3 1.5.2 1.4 1.2z" fill="currentColor" stroke="none"/>',
+  instagram:'<rect x="2.5" y="2.5" width="19" height="19" rx="5.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.4" cy="6.6" r="1.3" fill="currentColor" stroke="none"/>',
+  facebook:'<path d="M13.5 21v-7h2.4l.4-2.9h-2.8V9.2c0-.8.3-1.4 1.5-1.4h1.4V5.2c-.3 0-1.1-.1-2-.1-2 0-3.4 1.2-3.4 3.5v2.5H8.5V14H11v7h2.5z" fill="currentColor" stroke="none"/>',
+  reddit:'<circle cx="12" cy="13.5" r="7.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="13" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="13" r="1.2" fill="currentColor" stroke="none"/><path d="M9 16.5c1.8 1.3 4.2 1.3 6 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M12 6.2l.8-3 3.2.8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="16.8" cy="4.6" r="1.3" fill="currentColor" stroke="none"/>',
+  youtube:'<rect x="2" y="5.5" width="20" height="13" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.3l5.2 2.7L10 14.7V9.3z" fill="currentColor" stroke="none"/>',
+};
+
+const PL_ICON = p => `<span class="plogo"><svg viewBox="0 0 24 24" style="color:${p.color}">${ICONS[p.id]}</svg></span>`;
+const STATUS_BADGE = { connected:'<span class="badge connected">Connected</span>', good:'<span class="badge good">Good-to-have</span>', bonus:'<span class="badge bonus">Bonus</span>', syncing:'<span class="badge syncing">Syncing</span>' };
+const STATUS_DOT = { live:['live','Live'], syncing:['sync','Syncing'], idle:['off','Idle'] };
+/* [color, tag] — muted data palette, no emoji */
+const EMO_STYLE = {
+  Excitement:['#4E9A6E','EXCT'], Supportive:['#7A8CD8','SUPP'],
+  Neutral:['#8894A6','NEUT'], Positive:['#A9B4C9','POSI'],
+  Anxiety:['#E09A4E','ANXI'], Sarcasm:['#5B7FD4','SARC'],
+  Against:['#CC5F52','AGAI'], Negative:['#B04A3E','NEGA'],
+};
+
+function kpi(o){ const isTextVal = String(o.value).length > 8 && !o.value.includes('<small');
+  return `<div class="card kpi ${o.cls||''} ${isTextVal?'with-text-val':''}">
+  <div class="top"><span class="ico-circle ${o.circle||'blue'}">${o.icon}</span>${o.label}</div>
+  <div class="val">${o.value}</div>
+  <div class="delta ${o.dir}">${o.delta}</div>
+  ${o.spark?`<canvas class="spark" width="110" height="34" data-spk="${o.spark.join(',')}" data-color="${o.color||'#5B7FD4'}"></canvas>`:''}
+</div>`; }
+function cardHead(icon, title, right=''){ return `<div class="card-head"><span class="ico">${icon}</span><h3>${title}</h3><div class="right">${right}</div></div>`; }
+const UP='\u2191', DN='\u2193', FL='\u2192';
+function mom(m){ return m>15?`<span class="momentum up">${UP} +${m}%</span>`:m<-15?`<span class="momentum down">${DN} ${m}%</span>`:`<span class="momentum flat">${FL} ${Math.abs(m)}%</span>`; }
+
+/* ============================================================
+   1 · OVERVIEW PANEL
+   ============================================================ */
+function OverviewPanel(){
+  const k = D.overview.kpis, t = D.overview.timeline;
+  return `
+  <div class="page">
+    <div class="page-head">
+      <div><h1>Overview — Audience Command</h1>
+      <p>${k.platforms.value} platforms connected · ${fmt(k.followers.value)} analyzed profiles · 30-day window · model v4.2<span class="why">One unified view combining all four intelligence vectors — sentiment, demographics, trends, and network — the way real audience intelligence requires.</span></p></div>
+      <div class="right"><button class="btn primary" data-toast="Snapshot exported (mock)">${ICONS.eye} Export</button></div>
+    </div>
+
+    <div class="ps-strip" id="ps-strip" title="Prototype scope coverage — modules fully addressed in this build">
+      ${[
+        ['A','Data Pipeline'],['B','Sentiment Inference'],['C','Demographic Profiling'],
+        ['D','Trend Detection'],['E','Network Topology'],
+      ].map(([n,l])=>`<span class="ps-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg><b>${n}</b>· ${l}</span>`).join('')}
+    </div>
+
+    <div class="grid kpis">
+      ${kpi({label:'Followers Analyzed', value:fmt(k.followers.value), delta:`${UP} ${k.followers.delta}% vs last mo`, dir:'up', sparkColor:'#4E9A6E', circle:'green', icon:ICONS.users, spark:[9,10,10,11,12,12,13,14,15,16,17,18]})}
+      ${kpi({label:'Platforms Connected', value:`${k.platforms.value}<small> /8</small>`, delta:'6 live · 1 syncing · 1 idle', dir:'flat', circle:'blue', icon:ICONS.net})}
+      ${kpi({label:'Overall Sentiment', value:`${k.sentiment.value}<small>/10</small>`, delta:`${UP} ${k.sentiment.delta} pts this week`, dir:'up', sparkColor:'#8B7FD6', circle:'purple', icon:ICONS.smile, spark:[61,60,62,63,64,61,65,66,64,66,68,74]})}
+      ${kpi({label:'Top Trending Topic', value:k.trend.value, delta:`${UP} +${k.trend.delta}% peak velocity`, dir:'up', sparkColor:'#E09A4E', circle:'orange', icon:ICONS.bolt, spark:[6,8,11,16,22,30,41,55,74,96]})}
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      ${cardHead(ICONS.wave, 'Engagement & Sentiment — last 30 days', `<span class="sub">Mentions volume (bars) · Sentiment score (line)</span>`)}
+      <div class="chart-wrap"><canvas id="ov-timeline"></canvas></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      ${cardHead(ICONS.net, 'Platform Connections', `<span class="sub">tiering per workspace plan</span>`)}
+      <div class="ptabs" id="ov-ptabs">
+        ${D.platforms.filter(p=>['x','telegram','instagram','facebook','reddit','youtube'].includes(p.id)).map(p=>`
+          <button class="ptab" data-plat="${p.id}" title="${p.name} — ${p.rows} rows indexed">
+            ${PL_ICON(p)} ${p.name} ${STATUS_BADGE[p.status]}
+          </button>`).join('')}
+      </div>
+      <div class="axis-note" style="margin-top:12px"><span>Filter every module via topbar</span><span>Indexed rows: ${D.platforms.reduce((a,p)=>a+(p.rows.endsWith('M')?parseFloat(p.rows)*1e6:parseFloat(p.rows)*1e3||0),0).toLocaleString()}</span></div>
+    </div>
+
+    <div class="tiers">
+      ${[
+        ['core','Essential (Must-Have)'],['good','Desirable (Good-to-Have)'],['bonus','Appreciable Addition'],
+      ].map(([tier,title])=>{
+        const list = D.platforms.filter(p=>p.tier===tier);
+        return `<div class="tier-col card">
+          ${cardHead(ICONS.net, title, `<span class="sub">${list.length} platform${list.length===1?'':'s'}</span>`)}
+          <div class="tier-list">
+            ${list.map(p=>{
+              const st = STATUS_DOT[p.ingest]||['ok','Linked'];
+              return `<div class="tier-row">
+                <span class="dot ${st[0]}" title="${p.status}"></span>
+                <span class="nm">${p.name}</span>
+                <span class="st">${st[1]}</span>
+              </div>`;}).join('')}
+          </div>
+        </div>`;}).join('')}
+    </div>
+
+    <div class="grid g32" style="margin-top:16px">
+      <div class="card">
+        ${cardHead(ICONS.bolt, 'Key Events This Month')}
+        ${D.events.map(ev=>`
+          <div class="region-row"><span class="evt-circle">${ICONS.clock}</span>
+            <div style="flex:1;min-width:0"><b style="font-size:12px">${ev.title}</b>
+            <div style="font-family:var(--mono);font-size:9.5px;color:var(--text3)">${ev.date} · ${Object.entries(ev.stats)[0][1]} ${Object.keys(ev.stats)[0].toLowerCase()}</div>
+            <div style="font-size:10.5px;color:var(--text2);margin-top:2px;line-height:1.45">${ev.desc}</div></div>
+          </div>`).join('')}
+      </div>
+      <div class="card">
+        ${cardHead(ICONS.cpu, 'Data Pipeline Status', `<span class="badge connected">${D.pipeline.throughput}</span>`)}
+        <div class="status-grid">
+          ${D.pipeline.rows.map(r=>`
+            <div class="status-row">
+              <span class="nm"><svg viewBox="0 0 24 24" style="color:${(D.platforms.find(p=>p.id===r.id)||{}).color}">${ICONS[r.id]}</svg>${r.name}</span>
+              <span class="bar"><i style="width:${r.state==='live'?94:r.state==='syncing'?58:12}%;background:${r.state==='live'?'var(--pos)':r.state==='syncing'?'var(--accent)':'var(--neu)'}"></i></span>
+              <span class="st" style="color:${r.state==='live'?'var(--pos)':r.state==='syncing'?'var(--accent)':'var(--text3)'}">${r.state==='live'?'Live':r.state==='syncing'?'Syncing':'Idle'}</span>
+              <span class="lat">${r.latency}</span>
+            </div>`).join('')}
+        </div>
+        <div class="axis-note"><span>Mock ingestion — backend AI pipeline assumed complete</span><span>Updated ${D.pipeline.updated}</span></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function mountOverview(){
+  charts.combo({ canvas:document.getElementById('ov-timeline'), dates:D.overview.timeline.dates, bars:D.overview.timeline.mentions, line:D.overview.timeline.sentiment, height:290 });
+  document.querySelectorAll('.kpi canvas.spark[data-spk]').forEach(c=>charts.spark(c, c.dataset.spk.split(',').map(Number), c.dataset.color));
+  document.querySelectorAll('#ov-ptabs .ptab').forEach(b=>{
+    b.addEventListener('click',()=>window.SXApp.setPlatform(b.dataset.plat));
+  });
+  document.querySelectorAll('[data-toast]').forEach(b=>b.addEventListener('click',()=>SX.toast(b.dataset.toast)));
+}
+
+/* ============================================================
+   2 · SENTIMENT PANEL
+   ============================================================ */
+function SentimentPanel(){
+  const S = D.sentiment;
+  return `
+  <div class="page">
+    <div class="page-head">
+      <div><h1>Sentiment Analysis</h1>
+      <p>classifier v4.2 · ${fmt(S.posts.length*4872)} posts & comments · 8 emotion classes · 92.4% median confidence<span class="why">Surfaces nuanced emotion shifts — not just positive/negative — so teams catch sarcasm, anxiety, or backlash before it escalates.</span></p></div>
+      <div class="right">
+        <div class="range" id="sent-range"><button class="on">30d</button><button disabled>90d</button><button disabled>12m</button></div>
+      </div>
+    </div>
+
+    <div class="card">
+      ${cardHead(ICONS.wave, 'Emotion Timeline', `<span class="scrub-legend" style="margin:0">
+        <span><i style="background:#4E9A6E"></i>Positive</span><span><i style="background:#8894A6"></i>Neutral</span>
+        <span><i style="background:#CC5F52"></i>Negative</span><span><i style="background:#5B7FD4"></i>Sarcasm</span>
+        <span><i style="background:#E09A4E"></i>Anxiety</span><span><i style="background:#7A8CD8"></i>Excitement</span></span>`)}
+      <div class="chart-wrap"><canvas id="sen-line"></canvas></div>
+    </div>    <div class="card" style="margin-top:16px">
+      ${cardHead(ICONS.msg, 'Classified Feed', `<span class="sub">live sample — mock classifier output</span>
+        <select id="sen-filter" class="net-toolbar" style="font-size:11px;padding:4px 9px">
+          <option value="all">All emotions</option>
+          ${Object.keys(EMO_STYLE).map(e=>`<option>${e}</option>`).join('')}
+        </select>`)}
+      <div class="feed" id="sen-feed"></div>
+    </div>
+  </div>`;
+}
+
+function postCard(p){
+  const [col,tag] = EMO_STYLE[p.emotion]||EMO_STYLE.Neutral;
+  const pl = D.platforms.find(x=>x.id===p.platform);
+  return `<div class="post" data-emo="${p.emotion}">
+    <div class="p-head">
+      <span class="pav" style="background:${p.av}">${p.user[0].toUpperCase()}</span>
+      <span class="u">${p.user}</span><span class="h">${p.handle}</span>
+      <span class="plat"><svg viewBox="0 0 24 24" style="color:${pl.color}">${ICONS[pl.id]}</svg>${pl.name} · ${p.time}</span>
+    </div>
+    <div class="txt">${p.text}</div>
+    <div class="p-foot">
+      <span class="emo-chip" style="color:${col};border-color:${col}66">${tag}</span>
+      <span class="conf">conf ${Math.round(p.conf*100)}%<span class="bar"><i style="width:${Math.round(p.conf*100)}%"></i></span></span>
+      <span class="conf" style="margin-left:0">${ICONS.heart.replace('<svg','<svg width="11" height="11"')} ${fmt(p.likes)}</span>
+    </div>
+  </div>`;
+}
+
+function mountSentiment(){
+  const S = D.sentiment;
+  charts.line({
+    canvas:document.getElementById('sen-line'), dates:S.series.dates, height:300,
+    series:[
+      { name:'Positive',   data:S.series.positive,   color:'#4E9A6E' },
+      { name:'Neutral',    data:S.series.neutral,    color:'#8894A6' },
+      { name:'Negative',   data:S.series.negative,   color:'#CC5F52' },
+      { name:'Sarcasm',    data:S.series.sarcasm,    color:'#5B7FD4', width:1.4, fill:false },
+      { name:'Anxiety',    data:S.series.anxiety,    color:'#E09A4E', width:1.4, fill:false },
+      { name:'Excitement', data:S.series.excitement, color:'#7A8CD8', width:1.4, fill:false },
+      { name:'Supportive', data:S.series.supportive, color:'#A9B4C9', width:1.4, fill:false },
+      { name:'Against',    data:S.series.against,    color:'#B04A3E', width:1.4, fill:false },
+    ],
+  });
+
+  const feed = document.getElementById('sen-feed');
+  const renderFeed = f => { feed.innerHTML = S.posts.filter(p=>f==='all'||p.emotion===f).map(postCard).join('') || emptyState('No posts match this filter','Try another emotion class or widen the date range.','archive'); };
+  renderFeed('all');
+  document.getElementById('sen-filter').addEventListener('change', e=>renderFeed(e.target.value));
+}
+
+function emptyState(title, sub, icon='archive'){
+  return `<div class="empty"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a4 4 0 018 0v2"/></svg></span><b>${title}</b><p>${sub}</p><button class="btn" onclick="SX.toast('Filter reset (mock)')">Reset filters</button></div>`;
+}
+
+/* ============================================================
+   3 · DEMOGRAPHICS PANEL
+   ============================================================ */
+function DemographicsPanel(){
+  const G = D.demographics;
+  return `
+  <div class="page">
+    <div class="page-head">
+      <div><h1>Demographic Profiling</h1>
+      <p>inference run 2026-09-25T06:00Z · ${fmt(1284900)} profiles · 6 signal classes<span class="why">Informs where to launch campaigns, which languages to prioritize, and who your actual audience is — not who you assume it is.</span></p></div>
+    </div>
+
+    <div class="disclaimer">${ICONS.warn}<span><b>Privacy-first:</b> Aggregated &amp; anonymized — inferred from public indicators only (language, bio signals, posting patterns, public interactions). No private data is accessed, and no individual profiles are ever re-identified.</span></div>
+
+    <div class="grid g2">
+      <div class="card">
+        ${cardHead(ICONS.users, 'Age Brackets', `<span class="sub">modal band: 25–34</span>`)}
+        <div class="chart-wrap"><canvas id="dem-age"></canvas></div>
+      </div>
+      <div class="card">
+        ${cardHead(ICONS.smile, 'Language Breakdown', `<span class="sub">detected from post text</span>`)}
+        <div class="chart-wrap" style="max-width:280px;margin:0 auto"><canvas id="dem-lang"></canvas></div>
+      </div>
+    </div>
+
+    <div class="grid g32" style="margin-top:16px">
+      <div class="card">
+        ${cardHead(ICONS.globe, 'Geographic Distribution', `<span class="sub">top regions by audience share</span>`)}
+        ${G.regions.map(r=>`
+          <div class="region-row"><span class="flag">${r.code}</span><span class="nm">${r.name}</span>
+            <span class="track"><i style="width:${r.pct/32*100}%"></i></span><span class="pct">${r.pct}%</span>
+          </div>`).join('')}
+      </div>
+      <div class="card">
+        ${cardHead(ICONS.spark, 'Top Interest Categories', `<span class="sub">share of profiles</span>`)}
+        ${G.interestCats.map((c,i)=>`
+          <div class="region-row"><span class="flag">${String(i+1).padStart(2,'0')}</span><span class="nm">${c.name}</span>
+            <span class="track"><i style="width:${c.pct/31*100}%"></i></span><span class="pct">${c.pct}%</span>
+          </div>`).join('')}
+        <div class="axis-note"><span>inferred from public bio & engagement signals</span><span>top ${G.interestCats.length} of 24 tracked</span></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function mountDemographics(){
+  charts.hbars({ canvas:document.getElementById('dem-age'), data:D.demographics.ages, color:'#5B7FD4', height:250 });
+  charts.donut({ canvas:document.getElementById('dem-lang'), data:D.demographics.languages, height:250, centerLabel:'8', centerSub:'LANGUAGES' });
+}
+
+/* ============================================================
+   4 · TRENDS PANEL
+   ============================================================ */
+function TrendsPanel(){
+  const T = D.trends;
+  return `
+  <div class="page">
+    <div class="page-head">
+      <div><h1>Trend & Topic Detection</h1>
+      <p>velocity-scored across all connected platforms · rescored every 15 min<span class="why">Predicts what's about to break out, giving teams lead time instead of reacting after the fact.</span></p></div>
+      <div class="right"><span class="badge connected">live scoring</span></div>
+    </div>
+
+    ${RiskSignals()}
+
+    <div class="grid g23" style="margin-top:10px">
+      <div class="card">
+        ${cardHead(ICONS.trend, 'Trend Spikes — 30 day timeline', `<span class="scrub-legend" style="margin:0"><span><i style="background:#5B7FD4"></i>Agrarian policy backlash</span><span><i style="background:#7A8CD8"></i>Judicial reform debate</span><span><i style="background:#7A8CD8"></i>Fuel price discontent</span><span><i style="background:#4E9A6E"></i>Free speech debate</span></span>`)}
+        <div class="chart-wrap"><canvas id="tr-spikes"></canvas></div>
+      </div>
+      <div class="card">
+        ${cardHead(ICONS.trend, 'Top Trends Leaderboard', `<span class="sub">7-day momentum</span>`)}
+        ${T.ranked.map((r,i)=>`
+          <div class="trend-row">
+            <span class="rank">${i+1}</span>
+            <div class="tt"><b>${r.kw}</b><span>${(r.vol.replace('K','00').replace('.',''))+''} mentions</span></div>
+            ${mom(r.mom)}
+            <div class="vol"><canvas class="spark" width="86" height="26" data-spark="${r.spark}" data-color="${r.mom>0?'#4E9A6E':r.mom<-15?'#CC5F52':'#8894A6'}"></canvas><small>${r.vol}</small></div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-top:16px">
+      <div class="card">
+        <div class="predict">
+          <h4>${ICONS.spark} Predicted Next Trends <span class="badge" style="margin-left:auto">model forecast</span></h4>
+          ${T.predicted.map(p=>`
+            <div class="pred-row">
+              <span class="kw" title="${p.basis}">${p.kw}</span>
+              <span class="track"><i style="width:${p.conf}%"></i></span>
+              <span class="pc">${p.conf}%</span><span class="eta">${p.eta}</span>
+            </div>`).join('')}
+          <p style="font-size:11px;color:var(--text3);margin-top:10px">Hover a keyword for the model's reasoning. Confidence = blended velocity, cluster-adoption and KOL-signal score.</p>
+        </div>
+      </div>
+      <div class="card">
+        ${cardHead(ICONS.spark, 'Trending Terms — Word Cloud', `<span class="sub">sized by mention velocity</span>`)}
+        <div id="tr-cloud" style="min-height:250px"></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   4a · EMERGING RISK SIGNALS (early-warning demo)
+   ============================================================ */
+const RISK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3L2.5 20h19L12 3z"/><path d="M12 10v4.5M12 17.5h.01"/></svg>';
+function probBand(p){ return p>60?'r':p>=30?'a':'g'; }
+function RiskSignals(){
+  const R = D.trends.risks;
+  return `
+  <div class="card">
+    ${cardHead(RISK_ICON, 'Emerging Risk Signals', `<span class="badge syncing">early warning</span>`)}
+    <div class="risk-note">${R.note}</div>
+    ${R.entries.map(e=>{
+      const band = probBand(e.prob);
+      return `
+      <div class="risk-row ${band==='r'?'crit':band==='a'?'high':'mid'}" data-risk="${e.id}">
+        <div class="risk-main" title="Click to inspect flagged posts">
+          <div>
+            <div class="rname">${e.name}</div>
+            <div class="rvel">${e.velocity}</div>
+          </div>
+          <div class="prob ${band}">
+            <div class="pv"><small>breakout</small><b>${e.prob}%</b></div>
+            <div class="track"><i style="width:${e.prob}%"></i></div>
+          </div>
+          ${e.regions?`<div class="rregions">${e.regions.join('<span class="sep"> · </span>')}</div>`:''}
+          <div class="rsent">${e.sentiment.replace(/Against\/Grievance|Against/g,'<em>Against</em>').replace('Negative','<em>Negative</em>')}</div>
+          <div class="rspark"><canvas class="spark" width="72" height="22" data-spark="${e.spark}" data-color="${band==='r'?'#CC5F52':band==='a'?'#5B7FD4':'#8894A6'}"></canvas></div>
+          <span class="caret">&#9656;</span>
+        </div>
+        <div class="risk-detail">
+          <div class="sig-label">Key signals detected</div>
+          <div class="sig-tags">
+            ${e.signals.map(s=>`<span class="sig-tag${/coordination|encrypted/.test(s)?' coord':''}">${s}</span>`).join('')}
+          </div>
+          <div class="sig-label">Sample flagged posts — classifier output (${e.sentiment})</div>
+          <div class="risk-posts">
+            ${e.posts.map(p=>{
+              const pl = D.platforms.find(x=>x.id===p.platform);
+              const [col,tag] = EMO_STYLE[p.emotion]||EMO_STYLE.Neutral;
+              return `
+              <div class="risk-post">
+                <div class="rp-head">
+                  <span class="rp-handle">${p.handle}</span>
+                  <span class="rp-meta">${pl.name} · ${p.time}</span>
+                  <span class="rp-emo emo-chip" style="color:${col};border-color:${col}66">${tag}</span>
+                  <span class="rp-emo conf">conf ${Math.round(p.conf*100)}%</span>
+                </div>
+                <div class="rp-text">${p.text}</div>
+              </div>`;}).join('')}
+          </div>
+          <div class="risk-foot">synthetic classifier output · no live tracking · category-level aggregation only</div>
+        </div>
+      </div>`;}).join('')}
+  </div>`;
+}
+
+function mountTrends(){
+  const T = D.trends;
+  charts.line({
+    canvas:document.getElementById('tr-spikes'), dates:T.spikes.dates, height:300, yFormat:'none',
+    series:[
+      { name:'Agrarian policy backlash', data:T.spikes['Agrarian policy backlash'], color:'#5B7FD4' },
+      { name:'Judicial reform debate',   data:T.spikes['Judicial reform debate'],   color:'#7A8CD8' },
+      { name:'Fuel price discontent',    data:T.spikes['Fuel price discontent'],    color:'#7A8CD8' },
+      { name:'Free speech debate',       data:T.spikes['Free speech debate'],       color:'#4E9A6E' },
+    ],
+  });
+  document.querySelectorAll('canvas[data-spark]').forEach(c=>{
+    charts.spark(c, c.dataset.spark.split(',').map(Number), c.dataset.color);
+  });
+  charts.cloud(document.getElementById('tr-cloud'), T.cloud, { height:250 });
+  /* trend leaderboard rows are static; tooltip on keywords */
+  document.querySelectorAll('.pred-row .kw').forEach(k=>{
+    k.title = T.predicted.find(p=>p.kw===k.textContent)?.basis || '';
+  });
+
+  /* risk rows: sparklines + expand/collapse for flagged posts */
+  document.querySelectorAll('.risk-main .spark[data-spark]').forEach(c=>{
+    charts.spark(c, c.dataset.spark.split(',').map(Number), c.dataset.color);
+  });
+  document.querySelectorAll('.risk-main').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const row = btn.closest('.risk-row');
+      const wasOpen = row.classList.contains('open');
+      document.querySelectorAll('.risk-row.open').forEach(r=>r.classList.remove('open'));
+      if(!wasOpen) row.classList.add('open');
+    });
+  });
+}
+
+/* ============================================================
+   5 · NETWORK PANEL
+   ============================================================ */
+function NetworkPanel(){
+  const N = D.network;
+  return `
+  <div class="page">
+    <div class="page-head">
+      <div><h1>Link Analysis & Network Topology</h1>
+      <p>${N.nodes.length} seed accounts · ${N.edges.length} weighted interaction edges · 5 detected communities<span class="why">Identifies who actually drives conversation — critical for partnership targeting and early-warning monitoring.</span></p></div>
+      <div class="right">
+        <select id="net-layout" class="net-toolbar">
+          <option value="all">All clusters</option>
+          ${N.clusters.map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}
+        </select>
+        <button class="btn" id="net-relayout">${ICONS.net} Re-layout</button>
+      </div>
+    </div>
+
+    <div class="card net-card">
+      ${cardHead(ICONS.net, 'Interaction Graph', `<span class="sub">force-directed · 5 communities</span>`)}
+      <div class="net-wrap">
+        <canvas id="net-canvas"></canvas>
+        <div class="net-legend">
+          ${N.clusters.map(c=>`<span><i style="background:${c.color}"></i>${c.name}</span>`).join('')}
+          <span><i style="background:none;border:1.4px solid rgba(43,33,27,.6);border-radius:50%"></i>KOL (influence ≥80)</span>
+        </div>
+        <div class="net-hint">drag nodes · click for profile</div>
+      </div>
+      <div class="detail" id="net-detail"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      ${cardHead(ICONS.eye, 'Key Opinion Leaders', `<span class="sub">top 5 by influence score</span>`)}
+      ${N.nodes.filter(n=>n.influence>=80).sort((a,b)=>b.influence-a.influence).slice(0,5).map(n=>{
+          const c = N.clusters.find(c=>c.id===n.cluster);
+          return `<div class="trend-row" data-goto="${n.id}" style="cursor:pointer">
+            <span class="rank" style="background:${c.color}22;color:${c.color}">${n.influence}</span>
+            <div class="tt"><b>${n.label}</b><span>${c.name}${n.bridge?' · cluster bridge':''}</span></div>
+            <div class="vol"><small>followers</small>${fmt(n.followers)}</div>
+          </div>`;}).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+function mountNetwork(){
+  const N = D.network;
+  const canvas = document.getElementById('net-canvas');
+  const detail = document.getElementById('net-detail');
+
+  const net = SX.Network({
+    canvas, nodes:N.nodes, edges:N.edges, clusters:N.clusters, height:500,
+    onNodeSelect(n){ renderDetail(n); },
+  });
+
+  function renderDetail(n){
+    if(!n){ detail.classList.remove('show'); return; }
+    const c = N.clusters.find(c=>c.id===n.cluster);
+    const conn = net.edges.filter(e=>e.a===n||e.b===n)
+      .map(e=> e.a===n?e.b:e.a)
+      .sort((a,b)=>b.influence-a.influence);
+    detail.innerHTML = `
+      <div class="d-head">
+        <span class="dav" style="background:${c.color}">${n.label.replace('@','')[0].toUpperCase()}</span>
+        <div><h4>${n.label}</h4><span class="d-sub">${c.name}${n.bridge?' · bridge node':''}</span></div>
+        <button class="close" id="nd-close" aria-label="Close">✕</button>
+      </div>
+      <div class="d-stats">
+        <div class="d-stat"><b>${n.influence}</b><span>Influence score</span></div>
+        <div class="d-stat"><b>${fmt(n.followers)}</b><span>Followers</span></div>
+        <div class="d-stat"><b>${conn.length}</b><span>Direct links</span></div>
+        <div class="d-stat"><b>${(n.influence*0.83+conn.length*1.4).toFixed(1)}%</b><span>Est. reach factor</span></div>
+      </div>
+      <div class="influence-bar">
+        <div class="lbl"><span>Influence percentile (vs all analyzed accounts)</span><b>Top ${(100-n.influence)}%</b></div>
+        <div class="track"><i style="width:${n.influence}%"></i></div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:12px;letter-spacing:.5px">CONNECTED ACCOUNTS</div>
+      <div class="follower-chips">
+        ${conn.map(m=>`<span class="fchip" data-goto="${m.id}"><i style="background:${N.clusters.find(x=>x.id===m.cluster).color}">${m.label.replace('@','')[0].toUpperCase()}</i>${m.label}<b style="color:var(--text3);font-family:var(--mono);font-size:10px">${m.influence}</b></span>`).join('')||'<span style="color:var(--text3);font-size:12px">Isolated node</span>'}
+      </div>`;
+    detail.classList.add('show');
+    document.getElementById('nd-close').addEventListener('click',()=>{ net.select(null); });
+    detail.querySelectorAll('[data-goto]').forEach(ch=>ch.addEventListener('click',()=>net.select(ch.dataset.goto)));
+  }
+
+  /* KOL list → select in graph */
+  document.querySelectorAll('[data-goto]').forEach(el=>{
+    el.addEventListener('click',()=>net.select(el.dataset.goto));
+  });
+
+  document.getElementById('net-relayout').addEventListener('click',()=>{ net.relayout(); SX.toast('Force layout re-computed'); });
+  document.getElementById('net-layout').addEventListener('change', e=>{
+    const v = e.target.value;
+    net.nodes.forEach(n=>{ n._hide = v!=='all' && n.cluster!==v; });
+    SX.toast(v==='all'?'Showing all clusters':'Filtered view (mock highlight)');
+  });
+}
+
+/* ---------- exports ---------- */
+SX.panels = { OverviewPanel, SentimentPanel, DemographicsPanel, TrendsPanel, NetworkPanel, mountOverview, mountSentiment, mountDemographics, mountTrends, mountNetwork };
+})();
+
+</script>
+<script>
+/* ============================================================
+   SurviX — App Shell
+   Router · sidebar · topbar · platform filter · simulated async
+   loading · pipeline ticker · toast
+   ============================================================ */
+
+(function(){
+'use strict';
+const SX = (window.SX = window.SX || {});
+const D = window.SURVIX;
+
+const ICONS = {
+  logo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 15l5-6 4 4 6-8"/><path d="M14 5h5v5"/></svg>',
+  menu:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
+  users:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.2 3.4-5 6.5-5s5.7 1.8 6.5 5"/><circle cx="17.5" cy="9" r="2.5"/><path d="M16 15.2c2.6.3 4.6 1.9 5.3 4.8"/></svg>',
+};
+
+/* ---------- routing ---------- */
+const ROUTES = [
+  { id:'overview',     label:'Overview',       icon:'grid',   tag:null,   render:SX.panels.OverviewPanel,     mount:SX.panels.mountOverview },
+  { id:'sentiment',    label:'Sentiment',      icon:'wave',   tag:'AI',   render:SX.panels.SentimentPanel,    mount:SX.panels.mountSentiment },
+  { id:'demographics', label:'Demographics',   icon:'users',  tag:null,   render:SX.panels.DemographicsPanel, mount:SX.panels.mountDemographics },
+  { id:'trends',       label:'Trends',         icon:'trend',  tag:'LIVE', render:SX.panels.TrendsPanel,       mount:SX.panels.mountTrends },
+  { id:'network',      label:'Network',        icon:'net',    tag:'BETA', render:SX.panels.NetworkPanel,      mount:SX.panels.mountNetwork },
+];
+const NAV_ICONS = {
+  grid:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>',
+  wave:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12h4l3-8 4 16 3-8h6"/></svg>',
+  users:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.2 3.4-5 6.5-5s5.7 1.8 6.5 5"/><circle cx="17.5" cy="9" r="2.5"/><path d="M16 15.2c2.6.3 4.6 1.9 5.3 4.8"/></svg>',
+  trend:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>',
+  net:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="6" r="2.2"/><circle cx="19" cy="5" r="2.2"/><circle cx="12" cy="13" r="2.6"/><circle cx="4.5" cy="18.5" r="2.2"/><circle cx="19.5" cy="18" r="2.2"/><path d="M6.8 7.4l3.4 4M17 6.4l-3.2 5M10.2 14.6l-4 3M13.8 14.8l4 2.4"/></svg>',
+};
+
+let currentRoute = 'overview';
+let currentPlatform = 'all';
+
+/* ---------- toast ---------- */
+SX.toast = function(msg){
+  const t = document.getElementById('toast');
+  if(!t) return;
+  t.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>${msg}`;
+  t.classList.add('show');
+  clearTimeout(SX.toast._t);
+  SX.toast._t = setTimeout(()=>t.classList.remove('show'), 2400);
+};
+
+/* ---------- shell ---------- */
+function shell(){
+  document.getElementById('app').innerHTML = `
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <span class="logo">${ICONS.logo}</span>
+      <div><div class="brand-name">Survi<b>X</b></div><div class="brand-sub">Audience Intelligence</div></div>
+    </div>
+    <nav class="nav" id="nav">
+      <div class="nav-label">Intelligence Modules</div>
+      ${ROUTES.map((r,i)=>`
+        <button class="nav-item" data-route="${r.id}">
+          ${NAV_ICONS[r.icon]}<span>${r.label}</span>
+          ${r.tag?`<span class="tag ${r.tag==='BETA'?'beta':''}">${r.tag}</span>`:`<span class="tag">0${i+1}</span>`}
+        </button>`).join('')}
+    </nav>
+    <div class="pipeline-mini">
+      <h5>Pipeline <span style="color:var(--accent)">● ${D.pipeline.throughput}</span></h5>
+      <div class="pl-meter" title="aggregate ingestion load"><i></i></div>
+      ${D.pipeline.rows.map(r=>`
+        <div class="pl-row"><span class="dot ${r.state}"></span><span class="nm">${r.name}</span>
+        <span class="lat">${r.latency}</span>
+        <span class="st" style="color:${r.state==='live'?'var(--pos)':r.state==='syncing'?'var(--accent)':'var(--text3)'}">${r.state}</span></div>`).join('')}
+      <div class="pl-row" style="margin-top:6px"><span class="st" style="margin:0;color:var(--text3)">updated ${D.pipeline.updated}</span></div>
+      <div class="pl-row"><span class="st" style="margin:0;color:var(--text3)">window 30d · classifier v4.2</span></div>
+</div>
+    <div class="sidebar-foot">
+      <span class="avatar">SM</span><b>MERAJ</b> · PRO
+    </div>
+  </aside>
+
+  <main class="main" id="main">
+    <header class="topbar">
+      <button class="hamburger" id="hamburger">${ICONS.menu}</button>
+      <div class="crumb" id="crumb">Survi<b>X</b> · Overview</div>
+      <div class="topbar-right">
+        <div class="live-chip"><span class="dot"></span><span class="txt">LIVE</span><span style="color:var(--text3)" id="clock"></span></div>
+        <div class="range" id="platform-range">
+          <button class="on" data-pf="all">ALL</button>
+          ${['x','telegram','instagram','facebook','reddit','youtube'].map(p=>`<button data-pf="${p}">${D.platforms.find(x=>x.id===p).name.toUpperCase()}</button>`).join('')}
+        </div>
+      </div>
+    </header>
+    <div id="page-host" style="display:flex;flex-direction:column;flex:1"></div>
+  </main>`;
+}
+
+/* ---------- loading / render pipeline ---------- */
+function skeleton(){
+  return `<div class="page">
+    <div class="grid kpis">
+      ${'<div class="card kpi"><div class="skeleton" style="height:12px;width:55%"></div><div class="skeleton" style="height:26px;width:40%;margin:10px 0"></div><div class="skeleton" style="height:9px;width:65%"></div></div>'.repeat(4)}
+    </div>
+    <div class="card" style="margin-top:16px"><div class="skeleton" style="height:290px"></div></div>
+    <div class="grid g2" style="margin-top:16px">
+      <div class="card"><div class="skeleton" style="height:180px"></div></div>
+      <div class="card"><div class="skeleton" style="height:180px"></div></div>
+    </div>
+  </div>`;
+}
+
+let pageToken = 0;
+function navigate(routeId, opts={}){
+  const route = ROUTES.find(r=>r.id===routeId) || ROUTES[0];
+  currentRoute = route.id;
+  const host = document.getElementById('page-host');
+  const token = ++pageToken;
+
+  /* nav state */
+  document.querySelectorAll('#nav .nav-item[data-route]').forEach(b=>b.classList.toggle('active', b.dataset.route===route.id));
+  document.getElementById('crumb').innerHTML = `Survi<b>X</b> · ${route.label}`;
+  document.title = `SurviX — ${route.label} · Audience Intelligence`;
+  closeMobileSidebar();
+
+  /* simulated async data fetch */
+  host.innerHTML = skeleton();
+  const delay = opts.fast ? 60 : (420 + Math.random()*480);
+  setTimeout(()=>{
+    if(token!==pageToken) return; /* stale */
+    host.innerHTML = route.render();
+    if(location.hash.slice(1)!==route.id) history.replaceState(null,'','#'+route.id);
+    try{ route.mount(); }catch(err){ console.error('[SurviX] mount error:', err); }
+    /* re-trigger page animation */
+    host.firstElementChild && (host.firstElementChild.style.animation='none', void host.firstElementChild.offsetWidth, host.firstElementChild.style.animation='');
+  }, delay);
+}
+
+/* ---------- topbar platform filter (mock global filter) ---------- */
+function bindPlatformFilter(){
+  const wrap = document.getElementById('platform-range');
+  wrap.addEventListener('click', e=>{
+    const b = e.target.closest('button[data-pf]'); if(!b) return;
+    wrap.querySelectorAll('button').forEach(x=>x.classList.toggle('on', x===b));
+    currentPlatform = b.dataset.pf;
+    const name = currentPlatform==='all' ? 'All platforms' : D.platforms.find(p=>p.id===currentPlatform).name;
+    SX.toast(`Filtered to ${name} — charts refresh with mock data`);
+    /* simulated data-dependency: re-render current page */
+    navigate(currentRoute, { fast:true });
+  });
+}
+
+/* ---------- mobile sidebar ---------- */
+function closeMobileSidebar(){ document.getElementById('sidebar').classList.remove('open'); }
+
+/* ---------- pipeline ticker (simulated live ingestion) ---------- */
+function startPipelineTicker(){
+  setInterval(()=>{
+    const el = document.querySelector('.pipeline-mini h5 span');
+    if(el) el.textContent = '● ' + (1800 + Math.floor(Math.random()*120)) + ' rec/s';
+  }, 3000);
+}
+/* ---------- clock ---------- */
+function startClock(){
+  const tick = ()=>{ const el=document.getElementById('clock'); if(el) el.textContent = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'}); };
+  tick(); setInterval(tick, 1000);
+}
+
+/* ---------- boot ---------- */
+function boot(){
+  shell();
+  document.getElementById('nav').addEventListener('click', e=>{
+    const b = e.target.closest('.nav-item[data-route]');
+    if(b) navigate(b.dataset.route);
+  });
+  document.getElementById('hamburger').addEventListener('click', ()=>document.getElementById('sidebar').classList.toggle('open'));
+  bindPlatformFilter();
+  startPipelineTicker();
+  startClock();
+  navigate(location.hash.replace('#','')||'overview');
+  /* deep links + browser back/forward */
+  window.addEventListener('hashchange', ()=>{
+    const id = location.hash.replace('#','')||'overview';
+    if(id!==currentRoute) navigate(id);
+  });
+}
+document.addEventListener('DOMContentLoaded', boot);
+
+})();
+
+</script>
+</body>
+</html>
